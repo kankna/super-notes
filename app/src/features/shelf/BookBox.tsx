@@ -27,10 +27,10 @@ function relative(ts: number | null): string {
   if (!ts) return '还没开始'
   const diff = Date.now() - ts
   const day = 86_400_000
-  if (diff < 3_600_000) return '刚刚学过'
-  if (diff < day) return `${Math.floor(diff / 3_600_000)} 小时前学过`
-  if (diff < 30 * day) return `${Math.floor(diff / day)} 天前学过`
-  return new Date(ts).toLocaleDateString('zh-CN') + ' 学过'
+  if (diff < 3_600_000) return '刚刚'
+  if (diff < day) return `${Math.floor(diff / 3_600_000)} 小时前`
+  if (diff < 30 * day) return `${Math.floor(diff / day)} 天前`
+  return new Date(ts).toLocaleDateString('zh-CN')
 }
 
 export function BookBox({
@@ -49,7 +49,7 @@ export function BookBox({
 
   return (
     <div
-      className={`book book--${project.cover}${selected ? ' is-selected' : ''}${dragging ? ' is-dragging' : ''}`}
+      className={`book book--${project.cover}${selected ? ' is-selected' : ''}${dragging ? ' is-dragging' : ''}${stats.doubts > 0 ? ' has-badge' : ''}`}
       style={{ ['--accent' as string]: project.accent, ['--ink-on' as string]: ink }}
       data-book-id={project.id}
       onPointerDown={(e) => onPointerDown(e, project.id)}
@@ -114,10 +114,10 @@ export function BookBox({
             )}
           </div>
           <div className="book__foot">
-            <span className="book__dot" />
-            {stats.chapters} 章 · {stats.units} 单元
-            <span className="book__dot" />
-            {relative(stats.lastStudied)}
+            <span className="book__foot-stat">
+              {stats.chapters} 章 · {stats.units} 单元
+            </span>
+            <span className="book__foot-time">{relative(stats.lastStudied)}</span>
           </div>
         </div>
       </div>
