@@ -1221,39 +1221,8 @@ code {
 }
 
 /* ===========================================================
-   番茄钟 / 任务 / 照片
+   任务 / 照片
    =========================================================== */
-
-.pomo {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-5);
-}
-.pomo__dial {
-  width: 100px;
-  height: 100px;
-  border-radius: var(--r-full);
-  border: var(--hairline) solid var(--border-strong);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
-.pomo__time {
-  font-family: var(--font-mono);
-  font-size: var(--fs-lg);
-  color: var(--accent-text);
-}
-.pomo__label {
-  font-size: var(--fs-xs);
-  color: var(--text-faint);
-}
-.pomo__ctrls {
-  display: flex;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
-}
 
 .tasklist {
   display: flex;
@@ -1379,8 +1348,8 @@ code {
 
 /* 写心得 */
 .reflect__box {
+  width: 100%;
   min-height: 240px;
-  max-width: 760px;
   font-size: var(--fs-md);
   line-height: 1.9;
 }
@@ -1923,8 +1892,7 @@ code {
   flex: 1;
   min-width: 130px;
 }
-.blk__type,
-.blk__timing {
+.blk__type {
   width: auto;
 }
 .blk__instr {

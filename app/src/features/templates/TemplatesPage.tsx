@@ -192,17 +192,6 @@ export function TemplatesPage() {
                             </option>
                           ))}
                         </select>
-                        <select
-                          className="select blk__timing"
-                          value={b.timing}
-                          onChange={(e) =>
-                            patchBlock(i, { timing: e.target.value as Block['timing'] })
-                          }
-                        >
-                          <option value="none">不计时</option>
-                          <option value="manual">手动计时</option>
-                          <option value="pomodoro">番茄钟</option>
-                        </select>
                         <button
                           className="iconbtn"
                           title="删除这个块"
@@ -233,25 +222,6 @@ export function TemplatesPage() {
                       )}
                       {b.type === 'practice' && (
                         <div className="blk__row">
-                          <label className="blk__num">
-                            番茄钟专注（分钟）
-                            <input
-                              className="input"
-                              type="number"
-                              value={b.settings.pomodoro?.work ?? 25}
-                              onChange={(e) =>
-                                patchBlock(i, {
-                                  settings: {
-                                    ...b.settings,
-                                    pomodoro: {
-                                      work: Number(e.target.value),
-                                      break: b.settings.pomodoro?.break ?? 5,
-                                    },
-                                  },
-                                })
-                              }
-                            />
-                          </label>
                           <label className="blk__num">
                             单题停留提醒（分钟，0=不提醒）
                             <input

@@ -42,11 +42,9 @@ export function makeBlock(type: BlockType, overrides: Partial<Block> = {}): Bloc
     name: BLOCK_LABEL[type],
     what: BLOCK_WHAT[type],
     instruction: BLOCK_DESC[type],
-    timing: type === 'practice' ? 'pomodoro' : type === 'recall' ? 'manual' : 'none',
     settings: {
       hideAnswer: type === 'recall',
       revealMode: type === 'recall' ? 'per_item' : 'all',
-      pomodoro: type === 'practice' ? { work: 25, break: 5 } : undefined,
       maxMinutesPerTask: type === 'practice' ? 12 : 0,
       guidance:
         type === 'reflect'
@@ -85,18 +83,15 @@ export function makeMathTemplate(): Template {
         name: '先复习',
         instruction:
           '定理与公式：不翻书默写到白纸。例题：自己一步一步推出来并讲一遍。推不动的标「有点糊」，完全不懂的标「不会」。',
-        timing: 'manual',
       }),
       makeBlock('explain', {
         name: '弄懂它',
         instruction: '把不会清单逐条解决：先要一层提示，自己讲一遍，再做一道检测题。',
-        timing: 'manual',
       }),
       makeBlock('practice', {
         name: '去实践',
         instruction:
           '先浏览作业并粗分难度，不要在一道题上耗太久。独立完成后对答案，收藏好题和错题（拍照），同时回头补充笔记。',
-        timing: 'pomodoro',
       }),
       makeBlock('reflect', {
         name: '说感悟',
@@ -110,7 +105,6 @@ export function makeMathTemplate(): Template {
       makeBlock('retest', {
         name: '日后复测',
         instruction: '隔几天回来重新默写或重做一次，检验是否真的记住。',
-        timing: 'none',
       }),
     ],
   }
@@ -132,17 +126,14 @@ export function makeEnglishTemplate(): Template {
       makeBlock('recall', {
         name: '合上原文复述',
         instruction: '合上文章，用自己的话把内容讲一遍。讲不顺的地方回原文标记。',
-        timing: 'manual',
       }),
       makeBlock('explain', {
         name: '长难句拆解',
         instruction: '把读不懂的句子拆成主干和修饰，说明每个从句指什么。',
-        timing: 'manual',
       }),
       makeBlock('practice', {
         name: '改写练习',
         instruction: '把文章里的关键句改写成自己的表达，练习换词换结构。',
-        timing: 'pomodoro',
       }),
       makeBlock('reflect', {
         name: '提炼表达',

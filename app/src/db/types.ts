@@ -43,15 +43,11 @@ export type BlockType =
   | 'retest'
   | 'free'
 
-export type TimingMode = 'none' | 'manual' | 'pomodoro'
-
 export interface BlockSettings {
   /** 回忆块：答案默认收起 */
   hideAnswer?: boolean
   /** 揭示方式：逐条 / 一次性 */
   revealMode?: 'per_item' | 'all'
-  /** 练习块：番茄钟时长（分钟） */
-  pomodoro?: { work: number; break: number }
   /** 单题停留提醒（分钟），0 表示不提醒 */
   maxMinutesPerTask?: number
   /** 引导问题 */
@@ -69,7 +65,6 @@ export interface Block {
   /** 一句话说明这一步要干什么（大白话，直接显示给用户） */
   what: string
   instruction: string
-  timing: TimingMode
   settings: BlockSettings
 }
 
