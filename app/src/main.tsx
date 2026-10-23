@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import { useUI } from './store/ui'
 import './styles/global.css'
 import 'katex/dist/katex.min.css'
 
@@ -10,7 +11,8 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Service Worker 更新后自动刷新，避免用户一直停在旧版本
+// Service Worker 更新后不自动刷新 —— 自动刷新会把用户正在写的心得、正在填的
+// 表格直接冲掉。改成提示一句，由用户自己决定什么时候刷新。
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
@@ -19,11 +21,15 @@ if ('serviceWorker' in navigator) {
         reg.update().catch(() => {})
       })
       .catch(() => {})
-    let refreshing = false
+
+    const hadController = !!navigator.serviceWorker.controller
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return
-      refreshing = true
-      location.reload()
+      // 首次接管不算更新
+      if (!hadController) return
+      useUI.getState().showToast('新版本已就绪', {
+        label: '立即刷新',
+        run: () => location.reload(),
+      })
     })
   })
 }
