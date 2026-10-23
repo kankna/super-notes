@@ -1275,6 +1275,26 @@ code {
   color: var(--text);
   margin-bottom: 5px;
 }
+.task__title--pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  width: 100%;
+  border-radius: var(--r-xs);
+  transition: color var(--dur) var(--ease);
+}
+.task__title--pick:hover {
+  color: var(--accent-text);
+}
+.task__doing {
+  flex: none;
+  font-size: var(--fs-xs);
+  padding: 1px 7px;
+  border-radius: var(--r-xs);
+  background: var(--accent-bg);
+  color: var(--accent-text);
+}
 .task__meta {
   display: flex;
   align-items: center;

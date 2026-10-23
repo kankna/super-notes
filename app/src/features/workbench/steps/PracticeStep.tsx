@@ -193,9 +193,16 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
             return (
               <div className={`task${running ? ' is-running' : ''}`} key={t.id}>
                 <div className="task__main">
-                  <div className="task__title">{t.title}</div>
+                  <button
+                    className="task__title task__title--pick"
+                    onClick={() => startTask(t)}
+                    title="点一下表示正在做这道题"
+                  >
+                    {t.title}
+                    {running && <span className="task__doing">正在做</span>}
+                  </button>
                   <div className="task__meta">
-                    <span className="task__time">{formatDuration(elapsedOf(t))}</span>
+                    {running && <span className="task__time">{formatDuration(elapsedOf(t))}</span>}
                     <div className="task__diffs">
                       {DIFFS.map((d) => (
                         <button
@@ -214,15 +221,6 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
                   </div>
                 </div>
                 <div className="task__acts">
-                  {running ? (
-                    <button className="btn btn--sm" onClick={() => stopTask(t.id)}>
-                      完成这题
-                    </button>
-                  ) : (
-                    <button className="btn btn--sm" onClick={() => startTask(t)}>
-                      开始
-                    </button>
-                  )}
                   <button
                     className="iconbtn"
                     title="删除"
