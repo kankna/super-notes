@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "e2e": "node ../tools/e2e-chrome.mjs"
   },
   "dependencies": {
     "@xyflow/react": "^12.12.0",
