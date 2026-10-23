@@ -1,6 +1,7 @@
 import { getDb } from './db'
 import { newId } from '../lib/id'
-import type { Chapter, Doubt, Item, Mark, Project, Unit } from './types'
+import { builtinTemplates } from '../features/templates/blocks'
+import type { Chapter, Doubt, Item, Mark, Project, Task, Unit } from './types'
 
 /**
  * 示例数据用真实教学内容填充，而不是「项目1 / 例题1」这种空壳。
@@ -23,6 +24,7 @@ interface SeedUnit {
   status: Unit['status']
   last_studied_at?: number | null
   items: SeedItem[]
+  tasks?: { title: string; difficulty: Task['difficulty']; status: Task['status']; wrong?: boolean }[]
   doubts?: Omit<Doubt, 'id' | 'project_id' | 'unit_id' | 'item_id' | 'created_at' | 'updated_at'>[]
 }
 
@@ -37,6 +39,9 @@ interface SeedProject {
 }
 
 const DAY = 86_400_000
+
+/** 种子标记：保证"检查 + 写入"只做一次 */
+const SEED_FLAG = 'seeded.v1'
 
 const SEED_PROJECTS: SeedProject[] = [
   {
@@ -145,9 +150,17 @@ $$\\left[(x^2+1)^{3}\\right]' = 3(x^2+1)^2 \\cdot 2x$$`,
                 context: '导数与单调性定理的证明过程。课本只给了结论，我不太清楚中间用了什么。',
                 tried: '试着用定义写：任取 $x_1<x_2$，想证 $f(x_1)<f(x_2)$，但卡在“怎么把导数的信息用上”。',
                 explanation: '',
+                self_note: '',
                 next: '查拉格朗日中值定理，看能不能用 $f(x_2)-f(x_1)=f\'(\\xi)(x_2-x_1)$。',
                 status: 'open',
               },
+            ],
+            tasks: [
+              { title: '教材 P68 习题 1：求 $f(x)=2x^3-6x$ 的极值', difficulty: 'easy', status: 'todo' },
+              { title: '教材 P68 习题 2：讨论 $f(x)=x^3+x$ 的单调性', difficulty: 'easy', status: 'done' },
+              { title: '教材 P69 习题 5：含参单调性讨论', difficulty: 'hard', status: 'todo' },
+              { title: '练习册 P23 第 8 题：曲线与坐标轴围成面积', difficulty: 'medium', status: 'todo' },
+              { title: '错题重做：上周求 $f(x)=x^3-3x$ 单调区间', difficulty: 'medium', status: 'todo', wrong: true },
             ],
           },
           {
@@ -307,10 +320,42 @@ function demoNotePhoto(title: string, lines: string[]): Blob {
 
 export async function seedIfEmpty(): Promise<boolean> {
   const db = getDb()
-  const count = await db.projects.count()
-  if (count > 0) return false
 
-  const now = Date.now()
+  // 「检查 + 写入」必须放在同一个事务里。
+  // 否则并发执行（开发模式 StrictMode 会跑两次 effect，多标签页同时打开也会）
+  // 会用同一批固定 ID 写两遍，触发 BulkError，把库写成半截状态，
+  // 后面所有写操作都会失败。
+  return db.transaction(
+    'rw',
+    [
+      db.settings,
+      db.templates,
+      db.projects,
+      db.chapters,
+      db.units,
+      db.items,
+      db.marks,
+      db.doubts,
+      db.tasks,
+      db.attachments,
+    ],
+    async () => {
+      const seeded = await db.settings.get(SEED_FLAG)
+      if (seeded) return false
+
+      const count = await db.projects.count()
+      if (count > 0) {
+        await db.settings.put({ key: SEED_FLAG, value: true })
+        return false
+      }
+
+      // 内置流程模板：数学课后学习（五步 + 复测）、英语阅读复盘、自由学习
+      const existingTemplates = await db.templates.count()
+      if (existingTemplates === 0) {
+        await db.templates.bulkAdd(builtinTemplates())
+      }
+
+      const now = Date.now()
   let order = 0
 
   for (const sp of SEED_PROJECTS) {
@@ -336,9 +381,11 @@ export async function seedIfEmpty(): Promise<boolean> {
     const items: Item[] = []
     const marks: Mark[] = []
     const doubts: Doubt[] = []
+    const tasks: Task[] = []
     let chapterOrder = 0
     let unitOrder = 0
     let itemOrder = 0
+    let taskOrder = 0
 
     for (const sc of sp.chapters) {
       const chapterId = newId('c_')
@@ -394,21 +441,35 @@ export async function seedIfEmpty(): Promise<boolean> {
             updated_at: now,
           })
         }
+
+        for (const st of su.tasks ?? []) {
+          tasks.push({
+            id: newId('t_'),
+            project_id: projectId,
+            unit_id: unitId,
+            session_id: null,
+            title: st.title,
+            difficulty: st.difficulty,
+            status: st.status,
+            spent_ms: st.status === 'done' ? 6 * 60_000 : 0,
+            wrong: st.wrong ?? false,
+            note: '',
+            order: taskOrder,
+            created_at: now,
+            updated_at: now,
+          })
+          taskOrder += 1
+        }
       }
     }
 
-    await db.transaction(
-      'rw',
-      [db.projects, db.chapters, db.units, db.items, db.marks, db.doubts],
-      async () => {
-        await db.projects.add(project)
-        await db.chapters.bulkAdd(chapters)
-        await db.units.bulkAdd(units)
-        await db.items.bulkAdd(items)
-        if (marks.length) await db.marks.bulkAdd(marks)
-        if (doubts.length) await db.doubts.bulkAdd(doubts)
-      },
-    )
+    await db.projects.add(project)
+    await db.chapters.bulkAdd(chapters)
+    await db.units.bulkAdd(units)
+    await db.items.bulkAdd(items)
+    if (marks.length) await db.marks.bulkAdd(marks)
+    if (doubts.length) await db.doubts.bulkAdd(doubts)
+    if (tasks.length) await db.tasks.bulkAdd(tasks)
   }
 
   // 给第一个单元挂一张“课堂照片”，方便演示原图对照
@@ -435,14 +496,34 @@ export async function seedIfEmpty(): Promise<boolean> {
     })
   }
 
-  return true
+      await db.settings.put({ key: SEED_FLAG, value: true })
+      return true
+    },
+  )
 }
 
 export async function clearAllData(): Promise<void> {
   const db = getDb()
   await db.transaction(
     'rw',
-    [db.projects, db.chapters, db.units, db.items, db.marks, db.doubts, db.attachments, db.trash],
+    [
+      db.projects,
+      db.chapters,
+      db.units,
+      db.items,
+      db.marks,
+      db.doubts,
+      db.attachments,
+      db.trash,
+      db.tasks,
+      db.sessions,
+      db.step_events,
+      db.attempts,
+      db.pomodoros,
+      db.retests,
+      db.reflections,
+      db.preview_notes,
+    ],
     async () => {
       await db.projects.clear()
       await db.chapters.clear()
@@ -452,6 +533,16 @@ export async function clearAllData(): Promise<void> {
       await db.doubts.clear()
       await db.attachments.clear()
       await db.trash.clear()
+      await db.tasks.clear()
+      await db.sessions.clear()
+      await db.step_events.clear()
+      await db.attempts.clear()
+      await db.pomodoros.clear()
+      await db.retests.clear()
+      await db.reflections.clear()
+      await db.preview_notes.clear()
+      // 清空后允许重新写入示例数据
+      await db.settings.delete(SEED_FLAG)
     },
   )
 }

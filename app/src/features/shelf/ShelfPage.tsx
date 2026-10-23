@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useNavigate } from 'react-router-dom'
 import { getDb } from '../../db/db'
 import { newId } from '../../lib/id'
 import { Icon } from '../../components/Icon'
@@ -16,18 +17,17 @@ type DialogState =
 
 export function ShelfPage() {
   const db = getDb()
-  const { toast, showToast, hideToast, reducedMotion, toggleReducedMotion } = useUI()
+  const navigate = useNavigate()
+  const { toast, showToast, hideToast } = useUI()
+  const query = useUI((s) => s.shelfQuery)
 
-  const [query, setQuery] = useState('')
   const [dialog, setDialog] = useState<DialogState>({ mode: 'none' })
   const [overviewId, setOverviewId] = useState<string | null>(null)
-  const [trashOpen, setTrashOpen] = useState(false)
 
   const projects = useLiveQuery(() => db.projects.orderBy('order').toArray(), [])
   const units = useLiveQuery(() => db.units.toArray(), [])
   const items = useLiveQuery(() => db.items.toArray(), [])
   const doubts = useLiveQuery(() => db.doubts.toArray(), [])
-  const trashCount = useLiveQuery(() => db.trash.count(), [])
 
   /* ---------------- 拖拽排序 ---------------- */
 
@@ -298,45 +298,6 @@ export function ShelfPage() {
 
   return (
     <>
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand__mark">书斋</span>
-          <span className="brand__sub">Super Notes</span>
-        </div>
-
-        <div className="search">
-          <span className="search__icon">
-            <Icon name="search" size={15} />
-          </span>
-          <input
-            value={query}
-            placeholder="搜索项目、标签、说明…"
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          {query && (
-            <button className="search__clear" onClick={() => setQuery('')} aria-label="清除">
-              <Icon name="close" size={13} />
-            </button>
-          )}
-        </div>
-
-        <div className="topbar__spacer" />
-
-        <button
-          className={`iconbtn${reducedMotion ? ' is-on' : ''}`}
-          title={reducedMotion ? '减少动效：已开启' : '减少动效：已关闭'}
-          onClick={toggleReducedMotion}
-        >
-          <Icon name="motion" size={17} />
-        </button>
-        <button className="iconbtn" title="回收站" onClick={() => setTrashOpen(true)}>
-          <Icon name="trash" size={17} />
-          {(trashCount ?? 0) > 0 && <span className="dot-badge">{trashCount}</span>}
-        </button>
-        <div className="divider-v" />
-        <span className="brand__sub">本地模式 · 未同步</span>
-      </header>
-
       <main className="stage">
         <div className="shelf">
           <div className="shelf__head">
@@ -362,7 +323,7 @@ export function ShelfPage() {
                 detailOpen={false}
                 onSelect={(id) => {
                   if (dragMovedRef.current) return
-                  setOverviewId(id)
+                  navigate(`/p/${id}`)
                 }}
                 onEdit={(id) => setDialog({ mode: 'edit', id })}
                 onDelete={(id) => moveToTrash(id)}
@@ -428,61 +389,6 @@ export function ShelfPage() {
       )}
 
       {overviewId && <ProjectOverview projectId={overviewId} onClose={() => setOverviewId(null)} />}
-
-      {trashOpen && <TrashPanel onClose={() => setTrashOpen(false)} />}
     </>
-  )
-}
-
-function TrashPanel({ onClose }: { onClose: () => void }) {
-  const db = getDb()
-  const entries = useLiveQuery(() => db.trash.orderBy('created_at').reverse().toArray(), [])
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal__head">
-          <h3 className="modal__title">回收站</h3>
-          <button className="iconbtn" onClick={onClose} aria-label="关闭">
-            <Icon name="close" size={16} />
-          </button>
-        </div>
-        <div className="modal__body">
-          {(entries ?? []).length === 0 ? (
-            <div className="empty" style={{ padding: '30px 0' }}>
-              <div className="empty__title">回收站是空的</div>
-              <div>拖动书盒到底部红色区域可以把它放进来</div>
-            </div>
-          ) : (
-            (entries ?? []).map((e) => (
-              <div className="trash-row" key={e.id}>
-                <div>
-                  <div className="trash-row__label">{e.label}</div>
-                  <div className="trash-row__time">
-                    {new Date(e.created_at).toLocaleString('zh-CN')}
-                  </div>
-                </div>
-                <button
-                  className="btn btn--sm"
-                  onClick={async () => {
-                    await db.transaction('rw', [db.projects, db.trash], async () => {
-                      await db.projects.update(e.ref_id, { deleted_at: null, updated_at: Date.now() })
-                      await db.trash.delete(e.id)
-                    })
-                  }}
-                >
-                  恢复
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-        <div className="modal__foot">
-          <button className="btn btn--primary" onClick={onClose}>
-            关闭
-          </button>
-        </div>
-      </div>
-    </div>
   )
 }

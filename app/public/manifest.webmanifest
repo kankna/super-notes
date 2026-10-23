@@ -1,0 +1,18 @@
+{
+  "name": "书斋 · Super Notes",
+  "short_name": "书斋",
+  "description": "以学习资料为依据、以主动输出为核心、支持自定义流程的学习系统",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#16110d",
+  "theme_color": "#16110d",
+  "icons": [
+    {
+      "src": "./icons.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

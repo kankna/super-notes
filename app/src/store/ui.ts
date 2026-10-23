@@ -8,9 +8,11 @@ export interface ToastAction {
 interface UIState {
   reducedMotion: boolean
   toast: { text: string; action?: ToastAction } | null
+  shelfQuery: string
   toggleReducedMotion: () => void
   showToast: (text: string, action?: ToastAction) => void
   hideToast: () => void
+  setShelfQuery: (q: string) => void
 }
 
 const MOTION_KEY = 'sn.reducedMotion'
@@ -25,6 +27,7 @@ function readMotion(): boolean {
 export const useUI = create<UIState>((set, get) => ({
   reducedMotion: readMotion(),
   toast: null,
+  shelfQuery: '',
   toggleReducedMotion: () => {
     const next = !get().reducedMotion
     localStorage.setItem(MOTION_KEY, next ? '1' : '0')
@@ -33,6 +36,7 @@ export const useUI = create<UIState>((set, get) => ({
   },
   showToast: (text, action) => set({ toast: { text, action } }),
   hideToast: () => set({ toast: null }),
+  setShelfQuery: (q) => set({ shelfQuery: q }),
 }))
 
 export function applyMotionClass(reduced: boolean) {
