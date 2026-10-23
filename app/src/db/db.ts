@@ -125,6 +125,24 @@ export class AppDB extends Dexie {
               if (!p.subtitle) p.subtitle = rest.join(' ')
             }
           })
+
+        // 系统文案更新（只改内置模板的说明文字，不动用户自己的内容）
+        await tx
+          .table('templates')
+          .toCollection()
+          .modify((t: { id?: string; blocks?: { type: string; what?: string; instruction?: string }[] }) => {
+            if (t.id !== 'tpl_math_v1' || !Array.isArray(t.blocks)) return
+            for (const b of t.blocks) {
+              if (b.type === 'practice' && (b.what ?? '').includes('番茄钟')) {
+                b.what = '做作业。一题一题来，做不出的先跳过。'
+                b.instruction = '浏览作业、分类难度、推进做题、拍照收录错题好题'
+              }
+              if (b.type === 'recall' && (b.instruction ?? '').includes('不熟悉')) {
+                b.instruction =
+                  '定理与公式：不翻书默写到白纸。例题：自己一步一步推出来并讲一遍。推不动的标「有点糊」，完全不懂的标「不会」。'
+              }
+            }
+          })
       })
   }
 }

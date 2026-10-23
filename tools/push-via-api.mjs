@@ -43,6 +43,24 @@ async function api(path, method = 'GET', body) {
   return text ? JSON.parse(text) : null
 }
 
+/** 网络偶发失败时重试几次，避免整次推送白跑 */
+async function withRetry(fn, tries = 4) {
+  let lastErr
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      lastErr = err
+      const retryable = !String(err).includes('→ 4') && !String(err).includes('→ 422')
+      if (!retryable) throw err
+      await sleep(1500 * (i + 1))
+    }
+  }
+  throw lastErr
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
 function git(argsList) {
   return execFileSync('git', argsList, { encoding: 'utf8' }).trim()
 }
@@ -59,17 +77,17 @@ for (const path of files) {
   const size = statSync(abs).size
   if (size > 40 * 1024 * 1024) throw new Error(`文件过大，跳过：${path}`)
   const content = readFileSync(abs).toString('base64')
-  const blob = await api('/git/blobs', 'POST', { content, encoding: 'base64' })
+  const blob = await withRetry(() => api('/git/blobs', 'POST', { content, encoding: 'base64' }))
   treeEntries.push({ path, mode: '100644', type: 'blob', sha: blob.sha })
   process.stdout.write(`  blob ${path} (${(size / 1024).toFixed(1)} KB)\n`)
 }
 
-const tree = await api('/git/trees', 'POST', { tree: treeEntries })
+const tree = await withRetry(() => api('/git/trees', 'POST', { tree: treeEntries }))
 console.log(`tree ${tree.sha}`)
 
 let parents = []
 try {
-  const ref = await api(`/git/ref/heads/${BRANCH}`)
+  const ref = await withRetry(() => api(`/git/ref/heads/${BRANCH}`))
   parents = [ref.object.sha]
   console.log(`已有分支 HEAD ${parents[0]}`)
 } catch {
@@ -77,17 +95,19 @@ try {
 }
 
 const message = git(['log', '-1', '--pretty=%s']) || 'update'
-const commit = await api('/git/commits', 'POST', {
-  message,
-  tree: tree.sha,
-  parents,
-})
+const commit = await withRetry(() =>
+  api('/git/commits', 'POST', {
+    message,
+    tree: tree.sha,
+    parents,
+  }),
+)
 console.log(`commit ${commit.sha}`)
 
 try {
-  await api(`/git/refs/heads/${BRANCH}`, 'POST', { ref: `refs/heads/${BRANCH}`, sha: commit.sha })
+  await withRetry(() => api(`/git/refs/heads/${BRANCH}`, 'POST', { ref: `refs/heads/${BRANCH}`, sha: commit.sha }))
 } catch {
-  await api(`/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: false })
+  await withRetry(() => api(`/git/refs/heads/${BRANCH}`, 'PATCH', { sha: commit.sha, force: false }))
 }
 
 console.log(`\n✅ 已推送：https://github.com/${REPO}/tree/${BRANCH}`)
