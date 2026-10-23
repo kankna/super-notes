@@ -273,6 +273,30 @@ async function main() {
   await clickText('课程表', '课程表')
   await waitFor(`document.querySelector('.react-flow__node-unit') !== null`, '画布', 10000)
   console.log('  ✓ 课程表画布，单元数 =', await evaluate(`document.querySelectorAll('.react-flow__node-unit').length`))
+  await shot('04-课程表')
+
+  // 13. AI 设置
+  await send('Page.navigate', { url: `${SITE}#/settings/ai` })
+  await waitFor(`document.querySelector('.pick2') !== null`, 'AI 设置', 10000)
+  console.log('  ✓ AI 设置页 =', await evaluate(`document.querySelectorAll('.pick2__opt').length`))
+  await shot('05-AI设置')
+
+  // 14. 模板页
+  await send('Page.navigate', { url: `${SITE}#/templates` })
+  await waitFor(`document.querySelector('.tpl') !== null`, '模板页', 10000)
+  console.log('  ✓ 模板页 =', await evaluate(`document.querySelectorAll('.tplitem').length`))
+  await shot('06-模板')
+
+  // 15. 换主题色
+  await send('Page.navigate', { url: `${SITE}#/` })
+  await waitFor(`document.querySelector('.book__title') !== null`, '书架', 10000)
+  await evaluate(`document.querySelector('button[title="换主题色"]')?.click()`)
+  await sleep(300)
+  await evaluate(`document.querySelectorAll('.themepick__sw')[2]?.click()`)
+  await sleep(400)
+  const themed = await evaluate(`document.documentElement.getAttribute('data-theme')`)
+  console.log('  ✓ 主题色 =', themed)
+  await shot('07-主题色-琥珀')
 
   console.log('\n控制台错误：', logs.length ? logs.join(' | ') : '（无）')
   console.log('\n✅ 真实 Chrome 里完整流程跑通')

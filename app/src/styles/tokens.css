@@ -1,0 +1,110 @@
+/*
+ * 语义 token 层 —— 基于 Radix UI Colors
+ *
+ * Radix 的颜色使用规范：
+ *   1-2   背景
+ *   3-5   组件底色（3 常态 / 4 悬停 / 5 激活）
+ *   6-8   边框（6 弱 / 7 常规 / 8 强）
+ *   9-10  实心强调色
+ *   11-12 强调文字
+ *
+ * 所有颜色只从这里取，组件里不写死色值。
+ */
+
+:root {
+  /* ===== 中性色 ===== */
+  --app: var(--slate-1);
+  --app-subtle: var(--slate-2);
+  --element: var(--slate-3);
+  --element-hover: var(--slate-4);
+  --element-active: var(--slate-5);
+  --border-subtle: var(--slate-5);
+  --border: var(--slate-6);
+  --border-strong: var(--slate-7);
+  --solid: var(--slate-8);
+  --solid-hover: var(--slate-9);
+  --text-faint: var(--slate-9);
+  --text-muted: var(--slate-11);
+  --text: var(--slate-12);
+
+  /* ===== 主题色（默认靛蓝，可在设置里切换） ===== */
+  --accent-1: var(--indigo-1);
+  --accent-2: var(--indigo-2);
+  --accent-3: var(--indigo-3);
+  --accent-4: var(--indigo-4);
+  --accent-5: var(--indigo-5);
+  --accent-6: var(--indigo-6);
+  --accent-7: var(--indigo-7);
+  --accent-8: var(--indigo-8);
+  --accent-9: var(--indigo-9);
+  --accent-10: var(--indigo-10);
+  --accent-11: var(--indigo-11);
+  --accent-12: var(--indigo-12);
+  --accent-a1: var(--indigo-a1);
+  --accent-a2: var(--indigo-a2);
+  --accent-a3: var(--indigo-a3);
+  --accent-a4: var(--indigo-a4);
+  --accent-a5: var(--indigo-a5);
+  --accent-a6: var(--indigo-a6);
+  --accent-a7: var(--indigo-a7);
+  --accent-a8: var(--indigo-a8);
+  --accent-a9: var(--indigo-a9);
+  --accent-a10: var(--indigo-a10);
+  --accent-a11: var(--indigo-a11);
+  --accent-a12: var(--indigo-a12);
+
+  --accent: var(--accent-9);
+  --accent-hover: var(--accent-10);
+  --accent-text: var(--accent-11);
+  --accent-bg: var(--accent-a3);
+  --accent-border: var(--accent-a6);
+  /* 实心强调色上的文字：按主题分别给，见 themes.css */
+  --on-accent: #ffffff;
+
+  /* ===== 语义色 ===== */
+  --success: var(--green-9);
+  --success-text: var(--green-11);
+  --success-bg: var(--green-a3);
+  --success-border: var(--green-a6);
+
+  --warning: var(--orange-9);
+  --warning-text: var(--orange-11);
+  --warning-bg: var(--orange-a3);
+  --warning-border: var(--orange-a6);
+
+  --danger: var(--tomato-9);
+  --danger-text: var(--tomato-11);
+  --danger-bg: var(--tomato-a3);
+  --danger-border: var(--tomato-a6);
+
+  /* ===== 字号：只用三档，其余靠字重、颜色、间距拉开层次 ===== */
+  --fs-xs: 12px;
+  --fs-md: 14px;
+  --fs-lg: 20px;
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', sans-serif;
+  --font-serif: 'Songti SC', 'Source Han Serif SC', 'Noto Serif SC', Georgia, serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+
+  /* ===== 圆角：少用，且外大内小 ===== */
+  --r-xs: 3px;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-full: 999px;
+
+  /* ===== 动效：只在必要处，统一 250ms ease-out ===== */
+  --dur: 250ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ===== 间距 ===== */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  --hairline: 0.5px;
+}

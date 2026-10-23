@@ -110,7 +110,6 @@ export function TemplatesPage() {
         <div className="tpl__side">
           <div className="tpl__sidehead">
             <h2>流程模板</h2>
-            <span className="card__hint">模板决定每一轮的步骤</span>
           </div>
           {(templates ?? []).map((t) => (
             <button
@@ -122,8 +121,10 @@ export function TemplatesPage() {
               }}
             >
               <div className="tplitem__name">{t.name}</div>
-              <div className="tplitem__meta">
-                v{t.version} · {t.blocks.length} 步 {t.builtin ? '· 内置' : ''}
+              <div className="tplitem__meta inline">
+                <span>v{t.version}</span>
+                <span>{t.blocks.length} 步</span>
+                {t.builtin && <span>内置</span>}
               </div>
             </button>
           ))}
@@ -311,7 +312,6 @@ export function TemplatesPage() {
               </div>
 
               <div className="tpl__add">
-                <span className="card__hint">添加一个功能块：</span>
                 {TYPES.map((t) => (
                   <button className="btn btn--sm" key={t} onClick={() => addBlock(t)}>
                     + {BLOCK_LABEL[t]}

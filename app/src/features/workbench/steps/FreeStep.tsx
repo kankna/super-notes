@@ -63,14 +63,10 @@ export function FreeStep({ ctx }: { ctx: WbCtx }) {
 
   return (
     <div className="step">
-      <div className="step__intro">
-        <p className="step__detail">{ctx.step.instruction}</p>
-      </div>
 
       <section className="card">
         <div className="card__head">
           <h3>产出</h3>
-          <span className="card__hint">文本或图片都行</span>
         </div>
         <textarea
           className="textarea"

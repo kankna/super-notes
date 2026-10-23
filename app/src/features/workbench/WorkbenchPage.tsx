@@ -356,8 +356,8 @@ export function WorkbenchPage() {
             ← 书架
           </button>
           <div className="wb2__crumb">
-            {project?.name ? `${project.name} · ` : ''}
-            {unit.title}
+            {project?.name && <span>{project.name}</span>}
+            <span>{unit.title}</span>
           </div>
           <div className="wb2__tools">
             <button className="wb2__tool" onClick={() => setDrawer('notes')}>
@@ -497,7 +497,6 @@ function StartSession({
           ← 书架
         </button>
         <h1 className="start__title">开始学「{unitTitle}」</h1>
-        <p className="start__sub">选一个流程，系统会照着一步步带你走。选错了也没关系，随时能换。</p>
 
         {sessions && sessions.length > 0 && (
           <div className="start__history">

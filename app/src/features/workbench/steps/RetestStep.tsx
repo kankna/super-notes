@@ -78,14 +78,10 @@ export function RetestStep({ ctx }: { ctx: WbCtx }) {
 
   return (
     <div className="step">
-      <div className="step__intro">
-        <p className="step__detail">{ctx.step.instruction}</p>
-      </div>
 
       <section className="card">
         <div className="card__head">
           <h3>安排一次复测</h3>
-          <span className="card__hint">同一条目可以安排多次</span>
         </div>
         {ctx.items.length === 0 ? (
           <div className="card__empty">还没有条目可复测。</div>
@@ -131,8 +127,9 @@ export function RetestStep({ ctx }: { ctx: WbCtx }) {
                 <div className={`retest${isDue ? ' is-due' : ''}`} key={r.id}>
                   <div className="retest__info">
                     <div className="retest__title">{r.title}</div>
-                    <div className="retest__due">
-                      {formatDate(r.due_at)} · {relativeDays(r.due_at)}
+                    <div className="retest__due inline">
+                      <span>{formatDate(r.due_at)}</span>
+                      <span>{relativeDays(r.due_at)}</span>
                       {isDue && <span className="retest__badge">到点了</span>}
                     </div>
                   </div>

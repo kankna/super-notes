@@ -14,8 +14,6 @@ export function DataPage() {
   const fileRef = useRef<HTMLInputElement | null>(null)
   const [projectId, setProjectId] = useState('')
   const [busy, setBusy] = useState('')
-  const [outbox, setOutbox] = useState(0)
-  const [conflicts, setConflicts] = useState(0)
 
   const projects = useLiveQuery(() => db.projects.orderBy('order').toArray(), [])
   const trash = useLiveQuery(() => db.trash.orderBy('created_at').reverse().toArray(), [])
@@ -64,9 +62,6 @@ export function DataPage() {
       <div className="page">
         <div className="page__head">
           <h1 className="page__title">数据与导出</h1>
-          <span className="page__sub">
-            导出包可以离开本产品继续阅读，也可以导回来恢复流程和布局。
-          </span>
         </div>
 
         <section className="card">
@@ -143,24 +138,15 @@ export function DataPage() {
           <div className="field__hint" style={{ marginTop: 8 }}>
             接入后端后，这里会显示「保存中 / 已同步 / 离线待同步 / 存在冲突」四种状态。
           </div>
-          <button
-            className="btn btn--sm btn--ghost"
-            onClick={() => {
-              setOutbox(outboxCount ?? 0)
-              setConflicts(conflictCount ?? 0)
-            }}
-          >
-            刷新计数
-          </button>
-          <span className="card__hint" style={{ marginLeft: 8 }}>
-            待同步 {outbox} · 冲突 {conflicts}
-          </span>
+          <div className="inline" style={{ marginTop: 12 }}>
+            <span className="card__hint">待同步 {outboxCount ?? 0}</span>
+            <span className="card__hint">冲突 {conflictCount ?? 0}</span>
+          </div>
         </section>
 
         <section className="card">
           <div className="card__head">
             <h3>回收站</h3>
-            <span className="card__hint">删除的内容先到这里，可以恢复</span>
           </div>
           {(trash ?? []).length === 0 ? (
             <div className="card__empty">回收站是空的。</div>

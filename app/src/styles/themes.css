@@ -1,0 +1,113 @@
+/* 主题色切换：把 --accent-* 指向不同的 Radix 色阶 */
+
+[data-theme='indigo'] {
+  --accent-1: var(--indigo-1);
+  --accent-2: var(--indigo-2);
+  --accent-3: var(--indigo-3);
+  --accent-4: var(--indigo-4);
+  --accent-5: var(--indigo-5);
+  --accent-6: var(--indigo-6);
+  --accent-7: var(--indigo-7);
+  --accent-8: var(--indigo-8);
+  --accent-9: var(--indigo-9);
+  --accent-10: var(--indigo-10);
+  --accent-11: var(--indigo-11);
+  --accent-12: var(--indigo-12);
+  --accent-a1: var(--indigo-a1);
+  --accent-a2: var(--indigo-a2);
+  --accent-a3: var(--indigo-a3);
+  --accent-a4: var(--indigo-a4);
+  --accent-a5: var(--indigo-a5);
+  --accent-a6: var(--indigo-a6);
+  --accent-a7: var(--indigo-a7);
+  --accent-a8: var(--indigo-a8);
+  --accent-a9: var(--indigo-a9);
+  --accent-a10: var(--indigo-a10);
+  --accent-a11: var(--indigo-a11);
+  --accent-a12: var(--indigo-a12);
+  --on-accent: #ffffff;
+}
+
+[data-theme='teal'] {
+  --accent-1: var(--teal-1);
+  --accent-2: var(--teal-2);
+  --accent-3: var(--teal-3);
+  --accent-4: var(--teal-4);
+  --accent-5: var(--teal-5);
+  --accent-6: var(--teal-6);
+  --accent-7: var(--teal-7);
+  --accent-8: var(--teal-8);
+  --accent-9: var(--teal-9);
+  --accent-10: var(--teal-10);
+  --accent-11: var(--teal-11);
+  --accent-12: var(--teal-12);
+  --accent-a1: var(--teal-a1);
+  --accent-a2: var(--teal-a2);
+  --accent-a3: var(--teal-a3);
+  --accent-a4: var(--teal-a4);
+  --accent-a5: var(--teal-a5);
+  --accent-a6: var(--teal-a6);
+  --accent-a7: var(--teal-a7);
+  --accent-a8: var(--teal-a8);
+  --accent-a9: var(--teal-a9);
+  --accent-a10: var(--teal-a10);
+  --accent-a11: var(--teal-a11);
+  --accent-a12: var(--teal-a12);
+  --on-accent: #0d1514;
+}
+
+[data-theme='amber'] {
+  --accent-1: var(--amber-1);
+  --accent-2: var(--amber-2);
+  --accent-3: var(--amber-3);
+  --accent-4: var(--amber-4);
+  --accent-5: var(--amber-5);
+  --accent-6: var(--amber-6);
+  --accent-7: var(--amber-7);
+  --accent-8: var(--amber-8);
+  --accent-9: var(--amber-9);
+  --accent-10: var(--amber-10);
+  --accent-11: var(--amber-11);
+  --accent-12: var(--amber-12);
+  --accent-a1: var(--amber-a1);
+  --accent-a2: var(--amber-a2);
+  --accent-a3: var(--amber-a3);
+  --accent-a4: var(--amber-a4);
+  --accent-a5: var(--amber-a5);
+  --accent-a6: var(--amber-a6);
+  --accent-a7: var(--amber-a7);
+  --accent-a8: var(--amber-a8);
+  --accent-a9: var(--amber-a9);
+  --accent-a10: var(--amber-a10);
+  --accent-a11: var(--amber-a11);
+  --accent-a12: var(--amber-a12);
+  --on-accent: #16120c;
+}
+
+[data-theme='violet'] {
+  --accent-1: var(--violet-1);
+  --accent-2: var(--violet-2);
+  --accent-3: var(--violet-3);
+  --accent-4: var(--violet-4);
+  --accent-5: var(--violet-5);
+  --accent-6: var(--violet-6);
+  --accent-7: var(--violet-7);
+  --accent-8: var(--violet-8);
+  --accent-9: var(--violet-9);
+  --accent-10: var(--violet-10);
+  --accent-11: var(--violet-11);
+  --accent-12: var(--violet-12);
+  --accent-a1: var(--violet-a1);
+  --accent-a2: var(--violet-a2);
+  --accent-a3: var(--violet-a3);
+  --accent-a4: var(--violet-a4);
+  --accent-a5: var(--violet-a5);
+  --accent-a6: var(--violet-a6);
+  --accent-a7: var(--violet-a7);
+  --accent-a8: var(--violet-a8);
+  --accent-a9: var(--violet-a9);
+  --accent-a10: var(--violet-a10);
+  --accent-a11: var(--violet-a11);
+  --accent-a12: var(--violet-a12);
+  --on-accent: #ffffff;
+}

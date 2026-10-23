@@ -306,10 +306,6 @@ export function ShelfPage() {
               {visible.length} 个项目{query ? `（共 ${projects?.length ?? 0}）` : ''}
             </span>
           </div>
-          <p className="shelf__hint">
-            <b>点一下书盒就直接开始学</b>这一课。拖动书盒可以换顺序，拖到底部红色区域删掉。
-            长按（手机）也可以拖动。
-          </p>
           <div className="shelf__rule" />
 
           <div className="shelf__grid">

@@ -115,7 +115,7 @@ export function BookBox({
           </div>
           <div className="book__foot">
             <span className="book__foot-stat">
-              {stats.chapters} 章 · {stats.units} 单元
+              {stats.chapters} 章 {stats.units} 单元
             </span>
             <span className="book__foot-time">{relative(stats.lastStudied)}</span>
           </div>

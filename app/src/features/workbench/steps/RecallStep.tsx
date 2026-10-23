@@ -59,7 +59,6 @@ export function RecallStep({ ctx }: { ctx: WbCtx }) {
         <section className="card">
           <div className="card__head">
             <h3>定理与公式（默写）</h3>
-            <span className="card__hint">不翻书，先在白纸上写一遍</span>
           </div>
           <div className="icard-list">
             {groups.theory.map((it) => (
@@ -82,7 +81,6 @@ export function RecallStep({ ctx }: { ctx: WbCtx }) {
         <section className="card">
           <div className="card__head">
             <h3>例题重演</h3>
-            <span className="card__hint">自己一步步推出来，同时讲一遍</span>
           </div>
           <div className="icard-list">
             {groups.examples.map(({ q, a }) => (

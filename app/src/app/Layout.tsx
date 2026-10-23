@@ -4,13 +4,14 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { getDb } from '../db/db'
 import { Icon } from '../components/Icon'
 import { useUI } from '../store/ui'
+import { ThemePicker, useTheme } from './ThemePicker'
 
 /** 顶栏只留"家"和"更多"，其他都收进去 */
 const MORE_ITEMS = [
-  { to: '/retests', label: '复测清单', hint: '过几天要重做的题' },
-  { to: '/templates', label: '学习流程模板', hint: '改流程、加新流程' },
-  { to: '/settings/ai', label: 'AI 设置', hint: '接 DeepSeek 等模型' },
-  { to: '/settings/data', label: '数据与导出', hint: '备份、恢复、回收站' },
+  { to: '/retests', label: '复测清单' },
+  { to: '/templates', label: '学习流程模板' },
+  { to: '/settings/ai', label: 'AI 设置' },
+  { to: '/settings/data', label: '数据与导出' },
 ]
 
 export function Layout() {
@@ -20,6 +21,7 @@ export function Layout() {
   const { reducedMotion, toggleReducedMotion, toast, hideToast } = useUI()
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [theme, setTheme] = useTheme()
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   const trashCount = useLiveQuery(() => db.trash.count(), [])
@@ -86,6 +88,8 @@ export function Layout() {
           <Icon name="motion" size={17} />
         </button>
 
+        <ThemePicker theme={theme} onChange={setTheme} />
+
         <div className="topbar__menu" ref={menuRef}>
           <button
             className={`iconbtn${menuOpen ? ' is-on' : ''}`}
@@ -100,11 +104,9 @@ export function Layout() {
               {MORE_ITEMS.map((it) => (
                 <NavLink key={it.to} to={it.to} className="topmenu__item" onClick={() => setMenuOpen(false)}>
                   <span className="topmenu__label">{it.label}</span>
-                  <span className="topmenu__hint">{it.hint}</span>
                 </NavLink>
               ))}
               <div className="topmenu__sep" />
-              <div className="topmenu__note">数据存在这台设备的浏览器里。换设备不同步。</div>
             </div>
           )}
         </div>

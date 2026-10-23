@@ -69,7 +69,7 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
       unit_id: ctx.unitId,
       session_id: ctx.session.id,
       title,
-      difficulty: null,
+      difficulty: 'medium',
       status: 'todo',
       spent_ms: 0,
       wrong: false,
@@ -108,14 +108,10 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
 
   return (
     <div className="step">
-      <div className="step__intro">
-        <p className="step__detail">{ctx.step.instruction}</p>
-      </div>
 
       <section className="card">
         <div className="card__head">
           <h3>番茄钟</h3>
-          <span className="card__hint">休息单独记录，不计入学习时长</span>
         </div>
         <Pomodoro
           sessionId={ctx.session.id}
@@ -136,7 +132,6 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
       <section className="card">
         <div className="card__head">
           <h3>作业清单（{ctx.tasks.length}）</h3>
-          <span className="card__hint">先粗分难度，别在一道题上耗太久</span>
         </div>
 
         <div className="tasklist">

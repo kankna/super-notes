@@ -111,6 +111,21 @@ export class AppDB extends Dexie {
     super(name)
     this.version(1).stores(SCHEMA_V1)
     this.version(2).stores(SCHEMA_V2)
+    this.version(3)
+      .stores(SCHEMA_V2)
+      .upgrade(async (tx) => {
+        // 老数据里项目名用「·」分隔，拆进 name / subtitle
+        await tx
+          .table('projects')
+          .toCollection()
+          .modify((p: { name?: string; subtitle?: string }) => {
+            if (typeof p.name === 'string' && p.name.includes(' · ')) {
+              const [head, ...rest] = p.name.split(' · ')
+              p.name = head
+              if (!p.subtitle) p.subtitle = rest.join(' ')
+            }
+          })
+      })
   }
 }
 

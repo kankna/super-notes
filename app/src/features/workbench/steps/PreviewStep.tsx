@@ -119,8 +119,9 @@ export function PreviewStep({ ctx }: { ctx: WbCtx }) {
           </div>
           {(saved ?? []).map((p) => (
             <article className="reflection" key={p.id}>
-              <div className="reflection__time">
-                {p.title} · {new Date(p.created_at).toLocaleString('zh-CN')}
+              <div className="reflection__time inline">
+                <span>{p.title}</span>
+                <span>{new Date(p.created_at).toLocaleString('zh-CN')}</span>
               </div>
               {p.key_points && (
                 <div className="reflection__qa">

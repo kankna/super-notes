@@ -72,7 +72,7 @@ export function ProjectDialog({ initial, onSave, onClose }: Props) {
               className="input"
               value={draft.name}
               autoFocus
-              placeholder="例如：高一数学 · 函数与导数"
+              placeholder="例如：高一数学"
               onChange={(e) => set('name', e.target.value)}
             />
           </div>
@@ -82,7 +82,7 @@ export function ProjectDialog({ initial, onSave, onClose }: Props) {
             <input
               className="input"
               value={draft.subtitle}
-              placeholder="例如：必修二 · 导数入门"
+              placeholder="例如：函数与导数"
               onChange={(e) => set('subtitle', e.target.value)}
             />
           </div>

@@ -85,9 +85,6 @@ export function ProofPage() {
             ← 返回学习
           </button>
           <h1>原图校对</h1>
-          <span className="card__hint">
-            左侧是原图，右侧是条目草稿。看不清的地方标「待确认」，不要猜成确定结论。
-          </span>
           <div className="wb__spacer" />
           <div className="seg">
             {(['all', 'ai', 'confirmed'] as const).map((f) => (

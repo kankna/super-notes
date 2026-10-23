@@ -244,9 +244,6 @@ export function ExplainStep({ ctx }: { ctx: WbCtx }) {
 
   return (
     <div className="step">
-      <div className="step__intro">
-        <p className="step__detail">{ctx.step.instruction}</p>
-      </div>
 
       {ctx.doubts.length === 0 && (
         <div className="card__empty">
@@ -258,7 +255,6 @@ export function ExplainStep({ ctx }: { ctx: WbCtx }) {
         <section className="card">
           <div className="card__head">
             <h3>待解决（{open.length}）</h3>
-            <span className="card__hint">卡住不丢人，卡着不动才丢人</span>
           </div>
           <div className="doubt-list">{open.map(renderDoubt)}</div>
         </section>
@@ -268,7 +264,6 @@ export function ExplainStep({ ctx }: { ctx: WbCtx }) {
         <section className="card">
           <div className="card__head">
             <h3>已解决（{done.length}）</h3>
-            <span className="card__hint">可以随时重新打开</span>
           </div>
           <div className="doubt-list">{done.map(renderDoubt)}</div>
         </section>

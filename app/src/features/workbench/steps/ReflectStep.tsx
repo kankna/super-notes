@@ -49,15 +49,11 @@ export function ReflectStep({ ctx }: { ctx: WbCtx }) {
 
   return (
     <div className="step">
-      <div className="step__intro">
-        <p className="step__detail">{ctx.step.instruction}</p>
-      </div>
 
       {guidance.length > 0 && (
         <section className="card">
           <div className="card__head">
             <h3>引导问题</h3>
-            <span className="card__hint">可以选着答，也可以全忽略</span>
           </div>
           {guidance.map((g, i) => (
             <div className="guide" key={i}>

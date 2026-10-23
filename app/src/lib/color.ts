@@ -22,17 +22,17 @@ function lin(v: number): number {
   return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
 }
 
+/** 书盒封面可选色：取自 Radix Colors 深色色阶第 9 级 */
 export const ACCENTS = [
-  '#c07b3e',
-  '#b5543f',
-  '#8d6b3f',
-  '#6b7f45',
-  '#3f7d8c',
-  '#4a6a9b',
-  '#6b5b95',
-  '#8c4a78',
-  '#a34f4f',
-  '#5f7a72',
+  '#3e63dd', // indigo
+  '#12a594', // teal
+  '#ffc53d', // amber
+  '#f76b15', // orange
+  '#6e56cf', // violet
+  '#30a46c', // green
+  '#e5484d', // red
+  '#e54d2e', // tomato
+  '#696e77', // slate
 ]
 
 export function randomAccent(): string {

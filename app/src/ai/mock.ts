@@ -96,7 +96,7 @@ function mockOrganize(vars: Record<string, string>): string {
       },
       {
         kind: 'answer',
-        title: '例 1 · 解答与过程',
+        title: '例 1 解答与过程',
         body_md:
           "**解**　$f'(x)=3x^2-3=3(x-1)(x+1)$。\n\n" +
           '令 $f\'(x)=0$，得 $x=-1$ 与 $x=1$。\n\n' +

@@ -113,10 +113,6 @@ export function AiSettingsPage() {
         </button>
         <div className="page__head">
           <h1 className="page__title">AI 设置</h1>
-          <span className="page__sub">
-            不填也能用 —— 演示模式会生成结构完整的示例内容，整条流程照样走得通。
-            填了 Key 就能让 AI 真正读你的课堂照片。
-          </span>
         </div>
 
         <section className="card">
@@ -163,8 +159,9 @@ export function AiSettingsPage() {
             {(configs ?? []).map((c) => (
               <div className="cfg" key={c.id}>
                 <div className="cfg__name">{c.name}</div>
-                <div className="cfg__meta">
-                  {c.base_url} · {c.model}
+                <div className="cfg__meta inline">
+                  <span>{c.base_url}</span>
+                  <span>{c.model}</span>
                 </div>
                 <div className="cfg__acts">
                   <button className="btn btn--sm" onClick={() => setEditing({ ...c })}>
@@ -355,7 +352,6 @@ export function AiSettingsPage() {
             <section className="card">
               <div className="card__head">
                 <h3>谁用哪个模型</h3>
-                <span className="card__hint">不指定就全部用第一个配置</span>
               </div>
               <div className="maplist">
                 {MAPPING_KEYS.map((k) => (
@@ -417,7 +413,6 @@ export function AiSettingsPage() {
             <section className="card">
               <div className="card__head">
                 <h3>提示词</h3>
-                <span className="card__hint">五件事各自一份，互不干扰</span>
               </div>
               <div className="row-btns">
                 {MAPPING_KEYS.map((k) => (
@@ -452,12 +447,6 @@ export function AiSettingsPage() {
             </section>
           </div>
         </details>
-
-        <div className="page__foot">
-          <button className="linkbtn" onClick={() => (location.hash = '#/')}>
-            ← 回书架
-          </button>
-        </div>
       </div>
     </main>
   )

@@ -132,9 +132,6 @@ export function OrganizeStep({ ctx }: { ctx: WbCtx }) {
 
   return (
     <div className="step">
-      <div className="step__intro">
-        <p className="step__detail">{ctx.step.instruction}</p>
-      </div>
 
       <section className="card">
         <div className="card__head">
@@ -196,7 +193,6 @@ export function OrganizeStep({ ctx }: { ctx: WbCtx }) {
       <section className="card">
         <div className="card__head">
           <h3>AI 整理</h3>
-          <span className="card__hint">先转写，再按教学顺序整理成条目草稿</span>
         </div>
         <div className="row-btns">
           <button className="btn btn--primary" disabled={busy !== null} onClick={runTranscribe}>

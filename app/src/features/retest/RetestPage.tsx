@@ -50,8 +50,10 @@ export function RetestPage() {
       <div className={`retest${isDue ? ' is-due' : ''}`}>
         <div className="retest__info">
           <div className="retest__title">{r.title}</div>
-          <div className="retest__due">
-            {formatDate(r.due_at)} · {relativeDays(r.due_at)} · {unitTitle(r.unit_id)}
+          <div className="retest__due inline">
+            <span>{formatDate(r.due_at)}</span>
+            <span>{relativeDays(r.due_at)}</span>
+            <span>{unitTitle(r.unit_id)}</span>
             {isDue && <span className="retest__badge">到点了</span>}
           </div>
         </div>
@@ -88,9 +90,6 @@ export function RetestPage() {
       <div className="page">
         <div className="page__head">
           <h1 className="page__title">复测队列</h1>
-          <span className="page__sub">
-            隔一段时间再独立做一次，才知道自己是真的记住了还是只是当时看懂了。
-          </span>
         </div>
 
         {overdue.length > 0 && (
@@ -135,8 +134,9 @@ export function RetestPage() {
                   <Icon name={r.status === 'done' ? 'ok' : 'warning'} size={14} />
                   <div className="retest__info">
                     <div className="retest__title">{r.title}</div>
-                    <div className="retest__due">
-                      {formatDate(r.due_at)} · {unitTitle(r.unit_id)}
+                    <div className="retest__due inline">
+                      <span>{formatDate(r.due_at)}</span>
+                      <span>{unitTitle(r.unit_id)}</span>
                     </div>
                   </div>
                   <span className={`retest__result retest__result--${r.status}`}>

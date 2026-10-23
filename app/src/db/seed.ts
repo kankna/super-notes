@@ -46,12 +46,12 @@ const SEED_FLAG_TEMPLATES = 'seeded.templates.v1'
 
 const SEED_PROJECTS: SeedProject[] = [
   {
-    name: '高一数学 · 函数与导数',
-    subtitle: '必修二 · 导数入门',
+    name: '高一数学',
+    subtitle: '函数与导数',
     description:
       '按“拍照整理 → 课下五步”走的样板项目。每堂课先上传课堂照片生成笔记草稿，课下按先复习 / 弄懂它 / 去实践 / 说感悟 / 先探路走一遍。',
-    tags: ['数学', '高一', '在用'],
-    accent: '#c07b3e',
+    tags: ['数学', '高一', '必修二', '在用'],
+    accent: '#3e63dd',
     cover: 'gradient',
     chapters: [
       {
@@ -99,7 +99,7 @@ $$\\left[(x^2+1)^{3}\\right]' = 3(x^2+1)^2 \\cdot 2x$$`,
               },
               {
                 kind: 'answer',
-                title: '例 1 · 解答与过程',
+                title: '例 1 解答与过程',
                 source: 'teacher',
                 confirmed: true,
                 order: 3,
@@ -220,12 +220,12 @@ $$(\\ln x)' = \\dfrac{1}{x}\\qquad (e^x)' = e^x$$`,
     ],
   },
   {
-    name: '英语 · 阅读复盘',
-    subtitle: '跨学科模板示例',
+    name: '英语阅读',
+    subtitle: '复盘',
     description:
       '同一套基础动作换到非数学学科的验证：回忆块改成“合上原文复述”，解疑块用于长难句，练习块用于改写，反思块用于提炼表达。',
     tags: ['英语', '模板示例'],
-    accent: '#3f7d8c',
+    accent: '#12a594',
     cover: 'striped',
     chapters: [
       {
@@ -263,11 +263,11 @@ $$(\\ln x)' = \\dfrac{1}{x}\\qquad (e^x)' = e^x$$`,
     ],
   },
   {
-    name: '高考数学 · 一轮复习',
+    name: '高考数学',
     subtitle: '刚建的空项目',
     description: '一个还没开始的专题，用来展示“新建项目”的最小状态：只有章节骨架和一条待办单元。',
     tags: ['数学', '规划中'],
-    accent: '#6b5b95',
+    accent: '#6e56cf',
     cover: 'grid',
     chapters: [
       {
@@ -307,7 +307,7 @@ function demoNotePhoto(title: string, lines: string[]): Blob {
     </g>
     <line x1="70" y1="18" x2="70" y2="602" stroke="#e8a0a0" stroke-width="2"/>
     <text x="96" y="92" class="head">${title}</text>
-    <text x="96" y="140" class="sub">课堂笔记 · 拍照上传</text>
+    <text x="96" y="140" class="sub">课堂笔记 拍照上传</text>
     ${rows}
   </g>
   <style>

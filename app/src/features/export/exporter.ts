@@ -152,8 +152,9 @@ export async function exportProject(projectId: string): Promise<{ blob: Blob; na
   recordsDir.file('复测.csv', `\ufeff${csv(retestRows)}`)
 
   const recordMd = [
-    `# 学习记录 · ${project.name}`,
+    `# 学习记录`,
     '',
+    `项目：${project.name}`,
     `导出时间：${formatDateTime(Date.now())}`,
     '',
     '## 学习轮次',

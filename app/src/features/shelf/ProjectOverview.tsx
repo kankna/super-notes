@@ -118,7 +118,7 @@ export function ProjectOverview({ projectId, onClose }: { projectId: string; onC
                             {hidden ? (
                               <button className="ov__masked" onClick={() => setRevealAnswers(true)}>
                                 <Icon name="info" size={13} />
-                                答案已收起 · 点击揭示
+                                答案已收起，点击揭示
                               </button>
                             ) : (
                               <div className="ov__body">
