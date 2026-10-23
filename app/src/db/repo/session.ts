@@ -106,7 +106,8 @@ export async function listStepEvents(sessionId: string): Promise<StepEvent[]> {
   if (!sessionId) return []
   const db = getDb()
   const rows = await db.step_events.where('session_id').equals(sessionId).toArray()
-  return rows.sort((a, b) => a.ts - b.ts)
+  // 同一毫秒内的事件用 ID 做次级排序，保证 start → complete 的先后不乱
+  return rows.sort((a, b) => a.ts - b.ts || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
 }
 
 export async function listAttempts(sessionId: string): Promise<Attempt[]> {

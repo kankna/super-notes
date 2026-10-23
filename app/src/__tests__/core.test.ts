@@ -271,4 +271,32 @@ describe('种子数据', () => {
     expect(await db.projects.count()).toBe(3)
     expect(await db.templates.count()).toBe(3)
   })
+
+  it('老用户库里已有项目但没有模板时，模板会被补上', async () => {
+    // 模拟 v1 升级上来的库：有项目、有 seeded 标记，但 templates 表是空的
+    await db.projects.clear()
+    await db.templates.clear()
+    await db.settings.delete('seeded.templates.v1')
+    await db.projects.add({
+      id: 'p_old',
+      profile_id: 'default',
+      name: '老用户的项目',
+      subtitle: '',
+      description: '',
+      tags: [],
+      accent: '#c07b3e',
+      cover: 'gradient',
+      order: 0,
+      created_at: Date.now(),
+      updated_at: Date.now(),
+      deleted_at: null,
+    })
+    await db.settings.put({ key: 'seeded.v1', value: true })
+
+    await seedIfEmpty()
+
+    expect(await db.templates.count()).toBe(3)
+    // 老项目不能被重新播种覆盖
+    expect(await db.projects.count()).toBe(1)
+  })
 })

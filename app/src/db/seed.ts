@@ -42,6 +42,7 @@ const DAY = 86_400_000
 
 /** 种子标记：保证"检查 + 写入"只做一次 */
 const SEED_FLAG = 'seeded.v1'
+const SEED_FLAG_TEMPLATES = 'seeded.templates.v1'
 
 const SEED_PROJECTS: SeedProject[] = [
   {
@@ -340,6 +341,18 @@ export async function seedIfEmpty(): Promise<boolean> {
       db.attachments,
     ],
     async () => {
+      // 内置流程模板：数学课后学习（五步 + 复测）、英语阅读复盘、自由学习
+      // 与项目数据无关，独立补齐 —— 老用户从 v1 升级上来时库里没有模板，
+      // 如果跟着项目一起判空，模板会永远缺着。
+      const templatesSeeded = await db.settings.get(SEED_FLAG_TEMPLATES)
+      if (!templatesSeeded) {
+        const existingTemplates = await db.templates.count()
+        if (existingTemplates === 0) {
+          await db.templates.bulkAdd(builtinTemplates())
+        }
+        await db.settings.put({ key: SEED_FLAG_TEMPLATES, value: true })
+      }
+
       const seeded = await db.settings.get(SEED_FLAG)
       if (seeded) return false
 
@@ -347,12 +360,6 @@ export async function seedIfEmpty(): Promise<boolean> {
       if (count > 0) {
         await db.settings.put({ key: SEED_FLAG, value: true })
         return false
-      }
-
-      // 内置流程模板：数学课后学习（五步 + 复测）、英语阅读复盘、自由学习
-      const existingTemplates = await db.templates.count()
-      if (existingTemplates === 0) {
-        await db.templates.bulkAdd(builtinTemplates())
       }
 
       const now = Date.now()
@@ -543,6 +550,7 @@ export async function clearAllData(): Promise<void> {
       await db.preview_notes.clear()
       // 清空后允许重新写入示例数据
       await db.settings.delete(SEED_FLAG)
+      await db.settings.delete(SEED_FLAG_TEMPLATES)
     },
   )
 }

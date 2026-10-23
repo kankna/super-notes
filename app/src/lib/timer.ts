@@ -32,7 +32,9 @@ export const UNCERTAIN_THRESHOLD = 5 * 60_000
 
 export function computeTiming(events: StepEvent[], now = Date.now()): TimingResult {
   const byStep = new Map<string, StepTiming>()
-  const sorted = [...events].sort((a, b) => a.ts - b.ts)
+  const sorted = [...events].sort(
+    (a, b) => a.ts - b.ts || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  )
 
   for (const ev of sorted) {
     let t = byStep.get(ev.step_id)
