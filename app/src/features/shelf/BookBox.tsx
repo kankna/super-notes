@@ -58,7 +58,7 @@ export function BookBox({
       <div className="book__actions" onPointerDown={(e) => e.stopPropagation()}>
         <button
           className="book__act"
-          title="项目详情"
+          title="先看看里面有什么（不开始学）"
           onClick={(e) => {
             e.stopPropagation()
             onToggleDetail(project.id)
@@ -68,7 +68,7 @@ export function BookBox({
         </button>
         <button
           className="book__act"
-          title="编辑书盒（颜色、封面、名称）"
+          title="改封面和名字"
           onClick={(e) => {
             e.stopPropagation()
             onEdit(project.id)
@@ -78,7 +78,7 @@ export function BookBox({
         </button>
         <button
           className="book__act"
-          title="移入回收站"
+          title="删掉这个书盒"
           onClick={(e) => {
             e.stopPropagation()
             onDelete(project.id)

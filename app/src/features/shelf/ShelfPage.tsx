@@ -307,7 +307,7 @@ export function ShelfPage() {
             </span>
           </div>
           <p className="shelf__hint">
-            悬停书盒查看项目说明，<b>点一下</b>进入项目。拖动书盒可以重新排序，拖到底部红色区域移入回收站。
+            <b>点一下书盒就直接开始学</b>这一课。拖动书盒可以换顺序，拖到底部红色区域删掉。
             长按（手机）也可以拖动。
           </p>
           <div className="shelf__rule" />
@@ -323,7 +323,16 @@ export function ShelfPage() {
                 detailOpen={false}
                 onSelect={(id) => {
                   if (dragMovedRef.current) return
-                  navigate(`/p/${id}`)
+                  // 点书盒 = 直接开始学这一课（挑一课：进行中的 > 学过的 > 第一课）
+                  const pUnits = (units ?? []).filter((u) => u.project_id === id)
+                  if (pUnits.length === 0) {
+                    navigate(`/p/${id}`)
+                    return
+                  }
+                  const inProgress = pUnits.find((u) => u.status === 'in_progress')
+                  const studied = pUnits.find((u) => u.last_studied_at)
+                  const target = inProgress ?? studied ?? pUnits[0]
+                  navigate(`/p/${id}/u/${target.id}`)
                 }}
                 onEdit={(id) => setDialog({ mode: 'edit', id })}
                 onDelete={(id) => moveToTrash(id)}

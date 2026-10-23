@@ -1,9 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { getDb } from '../db/db'
 import { Icon } from '../components/Icon'
 import { useUI } from '../store/ui'
+
+/** 顶栏只留"家"和"更多"，其他都收进去 */
+const MORE_ITEMS = [
+  { to: '/retests', label: '复测清单', hint: '过几天要重做的题' },
+  { to: '/templates', label: '学习流程模板', hint: '改流程、加新流程' },
+  { to: '/settings/ai', label: 'AI 设置', hint: '接 DeepSeek 等模型' },
+  { to: '/settings/data', label: '数据与导出', hint: '备份、恢复、回收站' },
+]
 
 export function Layout() {
   const db = getDb()
@@ -11,37 +19,29 @@ export function Layout() {
   const location = useLocation()
   const { reducedMotion, toggleReducedMotion, toast, hideToast } = useUI()
   const [query, setQuery] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   const trashCount = useLiveQuery(() => db.trash.count(), [])
   const projects = useLiveQuery(() => db.projects.orderBy('order').toArray(), [])
 
   const inShelf = location.pathname === '/'
 
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [menuOpen])
+
   return (
     <>
       <header className="topbar">
         <button className="brand" onClick={() => navigate('/')} title="回到书架">
           <span className="brand__mark">书斋</span>
-          <span className="brand__sub">Super Notes</span>
         </button>
-
-        <nav className="topnav">
-          <NavLink to="/" className={({ isActive }) => `topnav__link${isActive ? ' is-on' : ''}`}>
-            书架
-          </NavLink>
-          <NavLink
-            to="/templates"
-            className={({ isActive }) => `topnav__link${isActive ? ' is-on' : ''}`}
-          >
-            模板
-          </NavLink>
-          <NavLink
-            to="/retests"
-            className={({ isActive }) => `topnav__link${isActive ? ' is-on' : ''}`}
-          >
-            复测
-          </NavLink>
-        </nav>
 
         {inShelf && (
           <div className="search">
@@ -50,7 +50,7 @@ export function Layout() {
             </span>
             <input
               value={query}
-              placeholder="搜索项目、标签、说明…"
+              placeholder="搜项目"
               onChange={(e) => setQuery(e.target.value)}
             />
             {query && (
@@ -63,13 +63,13 @@ export function Layout() {
 
         <div className="topbar__spacer" />
 
-        {projects && projects.length > 0 && (
+        {inShelf && projects && projects.length > 0 && (
           <select
             className="select topbar__jump"
             value=""
             onChange={(e) => e.target.value && navigate(`/p/${e.target.value}`)}
           >
-            <option value="">跳到项目…</option>
+            <option value="">直接去一课…</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -80,21 +80,34 @@ export function Layout() {
 
         <button
           className={`iconbtn${reducedMotion ? ' is-on' : ''}`}
-          title={reducedMotion ? '减少动效：已开启' : '减少动效：已关闭'}
+          title={reducedMotion ? '动效已关' : '动效开着'}
           onClick={toggleReducedMotion}
         >
           <Icon name="motion" size={17} />
         </button>
-        <NavLink to="/settings/ai" className="iconbtn" title="AI 服务设置">
-          <Icon name="palette" size={17} />
-        </NavLink>
-        <NavLink to="/settings/data" className="iconbtn" title="数据与导出">
-          <Icon name="book" size={17} />
-        </NavLink>
-        <button className="iconbtn" title="回收站" onClick={() => navigate('/settings/data')}>
-          <Icon name="trash" size={17} />
-          {(trashCount ?? 0) > 0 && <span className="dot-badge">{trashCount}</span>}
-        </button>
+
+        <div className="topbar__menu" ref={menuRef}>
+          <button
+            className={`iconbtn${menuOpen ? ' is-on' : ''}`}
+            title="更多"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <Icon name="more" size={17} />
+            {(trashCount ?? 0) > 0 && <span className="dot-badge">{trashCount}</span>}
+          </button>
+          {menuOpen && (
+            <div className="topmenu">
+              {MORE_ITEMS.map((it) => (
+                <NavLink key={it.to} to={it.to} className="topmenu__item" onClick={() => setMenuOpen(false)}>
+                  <span className="topmenu__label">{it.label}</span>
+                  <span className="topmenu__hint">{it.hint}</span>
+                </NavLink>
+              ))}
+              <div className="topmenu__sep" />
+              <div className="topmenu__note">数据存在这台设备的浏览器里。换设备不同步。</div>
+            </div>
+          )}
+        </div>
       </header>
 
       <Outlet />

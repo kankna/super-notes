@@ -55,8 +55,7 @@ export function PreviewStep({ ctx }: { ctx: WbCtx }) {
   return (
     <div className="step">
       <div className="step__intro">
-        <h2>{ctx.step.name}</h2>
-        <p>{ctx.step.instruction}</p>
+        <p className="step__detail">{ctx.step.instruction}</p>
         <div className="alert alert--info">
           探路的目标是「知道 Boss 在哪」，不是「把整关打穿」。别在这里死磕。
         </div>

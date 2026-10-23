@@ -19,21 +19,7 @@ import { MAPPING_KEYS, TASK_LABEL, extractVariables } from '../../ai/prompts'
 import { listPromptVersions, savePromptVersion } from '../../ai/tasks'
 import type { AiConfig, AiTaskKind } from '../../db/types'
 
-const EMPTY: AiConfig = {
-  id: '',
-  name: '',
-  protocol: 'openai',
-  base_url: 'https://api.deepseek.com',
-  api_key: '',
-  model: 'deepseek-v4-flash',
-  supports_text: true,
-  supports_image: false,
-  timeout_ms: 60_000,
-  max_tokens: 4096,
-  temperature: null,
-  created_at: 0,
-  updated_at: 0,
-}
+const DEEPSEEK_HINT = 'DeepSeek 就填 https://api.deepseek.com，模型名 deepseek-v4-flash'
 
 export function AiSettingsPage() {
   const db = getDb()
@@ -65,7 +51,7 @@ export function AiSettingsPage() {
     if (!editing) return
     if (!editing.name.trim()) return showToast('给这组配置起个名字')
     const check = validateBaseUrl(editing.base_url)
-    if (!check.ok) return showToast(`地址不合法：${check.message}`)
+    if (!check.ok) return showToast(`地址不对：${check.message}`)
     const row: AiConfig = {
       ...editing,
       id: editing.id || newId('cfg_'),
@@ -92,9 +78,9 @@ export function AiSettingsPage() {
       )
       const ms = Date.now() - t0
       setTestResult({
-        auth: `鉴权成功（${ms}ms）`,
-        text: `文字能力正常：${res.text.slice(0, 40)}`,
-        url: `实际请求：${url}`,
+        auth: `连上了（${ms} 毫秒）`,
+        text: `模型回的是：${res.text.slice(0, 40)}`,
+        url: `实际请求地址：${url}`,
       })
       await recordUsage({
         config_id: editing.id || null,
@@ -111,8 +97,8 @@ export function AiSettingsPage() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       setTestResult({
-        auth: `失败：${msg}`,
-        hint: '浏览器直连可能被厂商的 CORS 策略拦截。可以在设置里填自己的中转地址，或先用 Mock 模式。',
+        auth: `没连上：${msg}`,
+        hint: '浏览器直连厂商接口有时会被跨域限制拦掉。可以填自己的中转地址；先切回演示模式也不影响使用。',
       })
     } finally {
       setTesting(false)
@@ -122,47 +108,55 @@ export function AiSettingsPage() {
   return (
     <main className="stage">
       <div className="page">
+        <button className="wb2__back" onClick={() => (location.hash = '#/')}>
+          ← 回书架
+        </button>
         <div className="page__head">
-          <h1 className="page__title">AI 服务设置</h1>
+          <h1 className="page__title">AI 设置</h1>
           <span className="page__sub">
-            可以保存多组连接，按能力分配给照片转写、笔记整理、疑点讲解、出题、反馈。
+            不填也能用 —— 演示模式会生成结构完整的示例内容，整条流程照样走得通。
+            填了 Key 就能让 AI 真正读你的课堂照片。
           </span>
         </div>
 
         <section className="card">
           <div className="card__head">
-            <h3>Mock 模式</h3>
-            <span className="card__hint">开启时所有 AI 任务走本地模拟，零配置也能跑通全流程</span>
+            <h3>现在用哪种</h3>
           </div>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={mock}
-              onChange={async (e) => {
-                await setMockMode(e.target.checked)
-                setMock(e.target.checked)
+          <div className="pick2">
+            <button
+              className={`pick2__opt${mock ? ' is-on' : ''}`}
+              onClick={async () => {
+                await setMockMode(true)
+                setMock(true)
               }}
-            />
-            <span>{mock ? '已开启（演示用）' : '已关闭（走真实 API）'}</span>
-          </label>
+            >
+              <span className="pick2__name">演示模式</span>
+              <span className="pick2__desc">不花钱、不联网，AI 给示例内容</span>
+            </button>
+            <button
+              className={`pick2__opt${!mock ? ' is-on' : ''}`}
+              onClick={async () => {
+                await setMockMode(false)
+                setMock(false)
+              }}
+            >
+              <span className="pick2__name">真实模型</span>
+              <span className="pick2__desc">用下面填的 Key 调真模型</span>
+            </button>
+          </div>
         </section>
 
         <section className="card">
           <div className="card__head">
-            <h3>连接配置</h3>
-            <button
-              className="btn btn--sm btn--primary"
-              onClick={() => setEditing({ ...EMPTY, id: '' })}
-            >
-              + 新增配置
+            <h3>接一个模型</h3>
+            <button className="btn btn--sm btn--primary" onClick={() => setEditing(newConfig())}>
+              + 新增
             </button>
           </div>
 
           {(configs ?? []).length === 0 && (
-            <div className="card__empty">
-              还没有配置。DeepSeek 只需填 Base URL <code>https://api.deepseek.com</code> 和 API Key；
-              其他 OpenAI 兼容厂商同理。
-            </div>
+            <div className="card__empty">还没有配置。点右上角「新增」，填两行就能用。</div>
           )}
 
           <div className="cfglist">
@@ -171,12 +165,10 @@ export function AiSettingsPage() {
                 <div className="cfg__name">{c.name}</div>
                 <div className="cfg__meta">
                   {c.base_url} · {c.model}
-                  {c.supports_image ? ' · 支持图片' : ' · 仅文字'}
                 </div>
-                <div className="cfg__key">{maskKey(c.api_key)}</div>
                 <div className="cfg__acts">
                   <button className="btn btn--sm" onClick={() => setEditing({ ...c })}>
-                    编辑
+                    改
                   </button>
                   <button
                     className="btn btn--sm btn--danger"
@@ -185,7 +177,7 @@ export function AiSettingsPage() {
                       showToast('已删除')
                     }}
                   >
-                    删除
+                    删
                   </button>
                 </div>
               </div>
@@ -196,45 +188,28 @@ export function AiSettingsPage() {
         {editing && (
           <section className="card">
             <div className="card__head">
-              <h3>{editing.id ? '编辑配置' : '新增配置'}</h3>
+              <h3>{editing.id ? '改配置' : '新增配置'}</h3>
             </div>
 
             <div className="field">
-              <label className="field__label">配置名称</label>
+              <label className="field__label">给它起个名字</label>
               <input
                 className="input"
                 value={editing.name}
-                placeholder="例如：DeepSeek 主账号"
+                placeholder="例如：DeepSeek"
                 onChange={(e) => setEditing({ ...editing, name: e.target.value })}
               />
             </div>
 
             <div className="field">
-              <label className="field__label">接口协议</label>
-              <select
-                className="select"
-                value={editing.protocol}
-                onChange={(e) =>
-                  setEditing({ ...editing, protocol: e.target.value as AiConfig['protocol'] })
-                }
-              >
-                <option value="openai">OpenAI 兼容（/chat/completions）</option>
-                <option value="anthropic">Anthropic 兼容（/messages）</option>
-              </select>
-            </div>
-
-            <div className="field">
-              <label className="field__label">Base URL</label>
+              <label className="field__label">接口地址</label>
               <input
                 className="input"
                 value={editing.base_url}
                 placeholder="https://api.deepseek.com"
                 onChange={(e) => setEditing({ ...editing, base_url: e.target.value })}
               />
-              <div className="field__hint">
-                填写服务根地址即可，程序会自己拼接路径：
-                <code>{resolveEndpoint(editing.base_url || 'https://api.deepseek.com')}</code>
-              </div>
+              <div className="field__hint">{DEEPSEEK_HINT}</div>
             </div>
 
             <div className="field">
@@ -247,12 +222,12 @@ export function AiSettingsPage() {
                 onChange={(e) => setEditing({ ...editing, api_key: e.target.value })}
               />
               <div className="field__hint">
-                静态站形态下密钥保存在本机浏览器；导出包**不会**包含它。正式形态密钥留服务端。
+                存在这台设备的浏览器里，导出包不会包含它。正式版会挪到服务器。
               </div>
             </div>
 
             <div className="field">
-              <label className="field__label">模型 ID</label>
+              <label className="field__label">模型名</label>
               <input
                 className="input"
                 value={editing.model}
@@ -260,82 +235,103 @@ export function AiSettingsPage() {
                 onChange={(e) => setEditing({ ...editing, model: e.target.value })}
               />
               <div className="field__hint">
-                DeepSeek：文字 <code>deepseek-v4-flash</code> / <code>deepseek-v4-pro</code>；
-                图片识别 <code>deepseek-v4-flash-vision-exp</code>。
+                文字用 <code>deepseek-v4-flash</code>；要它读课堂照片，得用{' '}
+                <code>deepseek-v4-flash-vision-exp</code>。
               </div>
             </div>
 
-            <div className="field">
-              <label className="field__label">模型能力</label>
-              <div className="row-btns">
-                <label className="chk">
-                  <input
-                    type="checkbox"
-                    checked={editing.supports_text}
-                    onChange={(e) => setEditing({ ...editing, supports_text: e.target.checked })}
-                  />
-                  支持文字输入
-                </label>
-                <label className="chk">
-                  <input
-                    type="checkbox"
-                    checked={editing.supports_image}
-                    onChange={(e) => setEditing({ ...editing, supports_image: e.target.checked })}
-                  />
-                  支持图片输入
-                </label>
+            <details className="adv">
+              <summary className="adv__sum">高级设置</summary>
+              <div className="adv__body">
+                <div className="field">
+                  <label className="field__label">接口协议</label>
+                  <select
+                    className="select"
+                    value={editing.protocol}
+                    onChange={(e) =>
+                      setEditing({ ...editing, protocol: e.target.value as AiConfig['protocol'] })
+                    }
+                  >
+                    <option value="openai">OpenAI 兼容（/chat/completions）</option>
+                    <option value="anthropic">Anthropic 兼容（/messages）</option>
+                  </select>
+                </div>
+                <div className="field">
+                  <label className="field__label">模型能力</label>
+                  <div className="row-btns">
+                    <label className="chk">
+                      <input
+                        type="checkbox"
+                        checked={editing.supports_text}
+                        onChange={(e) =>
+                          setEditing({ ...editing, supports_text: e.target.checked })
+                        }
+                      />
+                      能读文字
+                    </label>
+                    <label className="chk">
+                      <input
+                        type="checkbox"
+                        checked={editing.supports_image}
+                        onChange={(e) =>
+                          setEditing({ ...editing, supports_image: e.target.checked })
+                        }
+                      />
+                      能读图片
+                    </label>
+                  </div>
+                </div>
+                <div className="field">
+                  <label className="field__label">超时 / 输出长度 / 温度</label>
+                  <div className="row-btns">
+                    <label className="blk__num">
+                      超时（毫秒）
+                      <input
+                        className="input"
+                        type="number"
+                        value={editing.timeout_ms}
+                        onChange={(e) =>
+                          setEditing({ ...editing, timeout_ms: Number(e.target.value) })
+                        }
+                      />
+                    </label>
+                    <label className="blk__num">
+                      最大输出
+                      <input
+                        className="input"
+                        type="number"
+                        value={editing.max_tokens}
+                        onChange={(e) =>
+                          setEditing({ ...editing, max_tokens: Number(e.target.value) })
+                        }
+                      />
+                    </label>
+                    <label className="blk__num">
+                      温度（留空不发送）
+                      <input
+                        className="input"
+                        type="number"
+                        step="0.1"
+                        value={editing.temperature ?? ''}
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            temperature: e.target.value === '' ? null : Number(e.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="field">
-              <label className="field__label">高级参数</label>
-              <div className="row-btns">
-                <label className="blk__num">
-                  超时（毫秒）
-                  <input
-                    className="input"
-                    type="number"
-                    value={editing.timeout_ms}
-                    onChange={(e) =>
-                      setEditing({ ...editing, timeout_ms: Number(e.target.value) })
-                    }
-                  />
-                </label>
-                <label className="blk__num">
-                  最大输出长度
-                  <input
-                    className="input"
-                    type="number"
-                    value={editing.max_tokens}
-                    onChange={(e) =>
-                      setEditing({ ...editing, max_tokens: Number(e.target.value) })
-                    }
-                  />
-                </label>
-                <label className="blk__num">
-                  温度（留空=不发送）
-                  <input
-                    className="input"
-                    type="number"
-                    step="0.1"
-                    value={editing.temperature ?? ''}
-                    onChange={(e) =>
-                      setEditing({
-                        ...editing,
-                        temperature: e.target.value === '' ? null : Number(e.target.value),
-                      })
-                    }
-                  />
-                </label>
-              </div>
-            </div>
+            </details>
 
             <div className="row-btns">
               <button className="btn btn--primary" onClick={save}>
                 保存
               </button>
               <button className="btn" disabled={testing} onClick={test}>
-                {testing ? '测试中…' : '测试连接'}
+                {testing ? '测试中…' : '试一下能不能连上'}
               </button>
               <button className="btn btn--ghost" onClick={() => setEditing(null)}>
                 取消
@@ -343,7 +339,7 @@ export function AiSettingsPage() {
             </div>
 
             {testResult.auth && (
-              <div className={`alert ${testResult.auth.startsWith('失败') ? 'alert--err' : 'alert--info'}`}>
+              <div className={`alert ${testResult.auth.startsWith('没连上') ? 'alert--err' : 'alert--info'}`}>
                 <div>{testResult.auth}</div>
                 {testResult.text && <div>{testResult.text}</div>}
                 {testResult.url && <div className="field__hint">{testResult.url}</div>}
@@ -353,107 +349,136 @@ export function AiSettingsPage() {
           </section>
         )}
 
-        <section className="card">
-          <div className="card__head">
-            <h3>功能映射</h3>
-            <span className="card__hint">每个能力用哪一组配置</span>
-          </div>
-          <div className="maplist">
-            {MAPPING_KEYS.map((k) => (
-              <div className="maprow" key={k}>
-                <span className="maprow__k">{TASK_LABEL[k]}</span>
-                <select
-                  className="select"
-                  value={mapping[k] ?? ''}
-                  onChange={async (e) => {
-                    await setMapping(k, e.target.value)
-                    setMappingState((m) => ({ ...m, [k]: e.target.value }))
+        <details className="adv">
+          <summary className="adv__sum">更多（谁用哪个模型、用量、提示词）</summary>
+          <div className="adv__body">
+            <section className="card">
+              <div className="card__head">
+                <h3>谁用哪个模型</h3>
+                <span className="card__hint">不指定就全部用第一个配置</span>
+              </div>
+              <div className="maplist">
+                {MAPPING_KEYS.map((k) => (
+                  <div className="maprow" key={k}>
+                    <span className="maprow__k">{TASK_LABEL[k]}</span>
+                    <select
+                      className="select"
+                      value={mapping[k] ?? ''}
+                      onChange={async (e) => {
+                        await setMapping(k, e.target.value)
+                        setMappingState((m) => ({ ...m, [k]: e.target.value }))
+                      }}
+                    >
+                      <option value="">（用第一个配置）</option>
+                      {(configs ?? []).map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="card__head">
+                <h3>用量</h3>
+                <span className="card__hint">以厂商返回的 usage 为准，没接账单前都是估算</span>
+              </div>
+              <div className="statgrid">
+                <div className="stat">
+                  <div className="stat__n">{usage?.calls ?? 0}</div>
+                  <div className="stat__k">总调用</div>
+                </div>
+                <div className="stat">
+                  <div className="stat__n">{usage?.live ?? 0}</div>
+                  <div className="stat__k">真实调用</div>
+                </div>
+                <div className="stat">
+                  <div className="stat__n">{usage?.mock ?? 0}</div>
+                  <div className="stat__k">演示调用</div>
+                </div>
+                <div className="stat">
+                  <div className="stat__n">{usage?.inputTokens ?? 0}</div>
+                  <div className="stat__k">输入 tokens</div>
+                </div>
+                <div className="stat">
+                  <div className="stat__n">{usage?.outputTokens ?? 0}</div>
+                  <div className="stat__k">输出 tokens</div>
+                </div>
+                <div className="stat">
+                  <div className="stat__n">{usage?.failures ?? 0}</div>
+                  <div className="stat__k">失败</div>
+                </div>
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="card__head">
+                <h3>提示词</h3>
+                <span className="card__hint">五件事各自一份，互不干扰</span>
+              </div>
+              <div className="row-btns">
+                {MAPPING_KEYS.map((k) => (
+                  <button
+                    key={k}
+                    className={`btn btn--sm${promptTask === k ? ' btn--primary' : ''}`}
+                    onClick={() => setPromptTask(k)}
+                  >
+                    {TASK_LABEL[k]}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                className="textarea"
+                style={{ minHeight: 220, marginTop: 10, fontFamily: 'var(--font-mono)', fontSize: 12.5 }}
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+              />
+              <div className="row-btns">
+                <span className="card__hint">变量：{extractVariables(promptText).join('、') || '无'}</span>
+                <button
+                  className="btn btn--sm btn--primary"
+                  onClick={async () => {
+                    await savePromptVersion(promptTask, promptText)
+                    showToast('已存为新版本')
                   }}
                 >
-                  <option value="">（未指定 → 走 Mock）</option>
-                  {(configs ?? []).map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                  <Icon name="ok" size={13} />
+                  存为新版本
+                </button>
               </div>
-            ))}
+            </section>
           </div>
-        </section>
+        </details>
 
-        <section className="card">
-          <div className="card__head">
-            <h3>用量与费用估算</h3>
-            <span className="card__hint">以供应商返回的 usage 为准，未接入账单前均为估算</span>
-          </div>
-          <div className="statgrid">
-            <div className="stat">
-              <div className="stat__n">{usage?.calls ?? 0}</div>
-              <div className="stat__k">总调用</div>
-            </div>
-            <div className="stat">
-              <div className="stat__n">{usage?.live ?? 0}</div>
-              <div className="stat__k">真实调用</div>
-            </div>
-            <div className="stat">
-              <div className="stat__n">{usage?.mock ?? 0}</div>
-              <div className="stat__k">Mock 调用</div>
-            </div>
-            <div className="stat">
-              <div className="stat__n">{usage?.inputTokens ?? 0}</div>
-              <div className="stat__k">输入 tokens</div>
-            </div>
-            <div className="stat">
-              <div className="stat__n">{usage?.outputTokens ?? 0}</div>
-              <div className="stat__k">输出 tokens</div>
-            </div>
-            <div className="stat">
-              <div className="stat__n">{usage?.failures ?? 0}</div>
-              <div className="stat__k">失败</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="card">
-          <div className="card__head">
-            <h3>提示词</h3>
-            <span className="card__hint">五个任务各自独立、独立版本化</span>
-          </div>
-          <div className="row-btns">
-            {MAPPING_KEYS.map((k) => (
-              <button
-                key={k}
-                className={`btn btn--sm${promptTask === k ? ' btn--primary' : ''}`}
-                onClick={() => setPromptTask(k)}
-              >
-                {TASK_LABEL[k]}
-              </button>
-            ))}
-          </div>
-          <textarea
-            className="textarea"
-            style={{ minHeight: 220, marginTop: 10, fontFamily: 'var(--font-mono)', fontSize: 12.5 }}
-            value={promptText}
-            onChange={(e) => setPromptText(e.target.value)}
-          />
-          <div className="row-btns">
-            <span className="card__hint">
-              变量：{extractVariables(promptText).join('、') || '无'}
-            </span>
-            <button
-              className="btn btn--sm btn--primary"
-              onClick={async () => {
-                await savePromptVersion(promptTask, promptText)
-                showToast('已存为新版本')
-              }}
-            >
-              <Icon name="ok" size={13} />
-              存为新版本
-            </button>
-          </div>
-        </section>
+        <div className="page__foot">
+          <button className="linkbtn" onClick={() => (location.hash = '#/')}>
+            ← 回书架
+          </button>
+        </div>
       </div>
     </main>
   )
 }
+
+function newConfig(): AiConfig {
+  return {
+    id: '',
+    name: '',
+    protocol: 'openai',
+    base_url: 'https://api.deepseek.com',
+    api_key: '',
+    model: 'deepseek-v4-flash',
+    supports_text: true,
+    supports_image: false,
+    timeout_ms: 60_000,
+    max_tokens: 4096,
+    temperature: null,
+    created_at: 0,
+    updated_at: 0,
+  }
+}
+
+export { maskKey }

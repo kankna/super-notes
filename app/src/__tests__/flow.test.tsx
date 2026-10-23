@@ -61,26 +61,20 @@ describe('完整学习流程（真实点击）', () => {
     // 1. 书架
     await waitShelf()
 
-    // 2. 点书盒 → 项目画布
+    // 2. 点书盒 → 直接进入这一课的工作台（少一层跳转）
     await user.click(firstBook())
-    await waitFor(() => expect(window.location.hash).toMatch(/^#\/p\/p_/))
-    expect(await screen.findByText('实线箭头 = 学习顺序')).toBeInTheDocument()
-
-    // 3. 点单元卡片 → 学习工作台
-    const unitNode = await screen.findByText('第 3 讲 函数的单调性与导数')
-    await user.click(unitNode)
     await waitFor(() => expect(window.location.hash).toMatch(/\/u\/u_/))
 
-    // 4. 选模板开始
+    // 3. 选模板开始
     const tpl = await screen.findByRole('button', { name: /数学课后学习/ })
     await user.click(tpl)
-    await waitFor(() => expect(screen.getByText(/7 个步骤/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/共 7 步/)).toBeInTheDocument())
 
     // 步骤条出现 7 个步骤
     const steps = screen.getAllByRole('button', { name: /^第 [1-7] 步/ })
     expect(steps.length).toBe(7)
 
-    // 5. 计时：开始
+    // 4. 计时：开始
     const startBtn = screen.getByRole('button', { name: '开始' })
     await user.click(startBtn)
     await waitFor(() => expect(screen.getByRole('button', { name: '暂停' })).toBeInTheDocument())
@@ -91,9 +85,9 @@ describe('完整学习流程（真实点击）', () => {
     const events = await listStepEvents(sessions[0].id)
     expect(events.map((e) => e.type)).toContain('start')
 
-    // 6. 先复习：标记不熟悉 / 有疑问
+    // 5. 先复习：标记「有点糊」/「不会」
     await user.click(screen.getByRole('button', { name: '第 2 步 先复习' }))
-    const markButtons = await screen.findAllByRole('button', { name: '不熟悉' })
+    const markButtons = await screen.findAllByRole('button', { name: '有点糊' })
     expect(markButtons.length).toBeGreaterThan(0)
     await user.click(markButtons[0])
     await waitFor(async () => {
@@ -102,7 +96,7 @@ describe('完整学习流程（真实点击）', () => {
       expect(marked.flat().some((m) => m.kind === 'unfamiliar')).toBe(true)
     })
 
-    const doubtBtn = (await screen.findAllByRole('button', { name: '有疑问' }))[0]
+    const doubtBtn = (await screen.findAllByRole('button', { name: '不会' }))[0]
     await user.click(doubtBtn)
     const targetUnit = (await db.units.toArray()).find(
       (u) => u.title === '第 3 讲 函数的单调性与导数',
@@ -112,7 +106,7 @@ describe('完整学习流程（真实点击）', () => {
       expect(doubts.length).toBeGreaterThan(0)
     })
 
-    // 7. 弄懂它：疑点清单 + AI 分层提示
+    // 6. 弄懂它：疑点清单 + AI 分层提示
     await user.click(screen.getByRole('button', { name: '第 3 步 弄懂它' }))
     expect(await screen.findByText(/为什么/)).toBeInTheDocument()
     const aiBtn = (await screen.findAllByRole('button', { name: 'AI 分层提示' }))[0]
@@ -126,12 +120,12 @@ describe('完整学习流程（真实点击）', () => {
       timeout: 5000,
     })
 
-    // 8. 去实践：番茄钟 + 任务清单
+    // 7. 去实践：番茄钟 + 任务清单
     await user.click(screen.getByRole('button', { name: '第 4 步 去实践' }))
     expect(await screen.findByText('开始专注 25 分钟')).toBeInTheDocument()
     expect(screen.getByText(/教材 P68 习题 1/)).toBeInTheDocument()
 
-    // 9. 说感悟：写心得并保存
+    // 8. 说感悟：写心得并保存
     await user.click(screen.getByRole('button', { name: '第 5 步 说感悟' }))
     const box = await screen.findByPlaceholderText(/写完题目再写收获/)
     await user.type(box, '这次终于把导数符号和单调性连起来了。')
@@ -140,7 +134,7 @@ describe('完整学习流程（真实点击）', () => {
       expect((await db.reflections.toArray()).length).toBe(1)
     })
 
-    // 10. 先探路：预习清单
+    // 9. 先探路：预习清单
     await user.click(screen.getByRole('button', { name: '第 6 步 先探路' }))
     const kp = await screen.findByPlaceholderText(/Boss 在哪/)
     await user.type(kp, '构造函数，把不等式变到同一侧')
@@ -149,18 +143,17 @@ describe('完整学习流程（真实点击）', () => {
       expect((await db.preview_notes.toArray()).length).toBe(1)
     })
 
-    // 11. 日后复测：安排一次复测
+    // 10. 日后复测：安排一次复测
     await user.click(screen.getByRole('button', { name: '第 7 步 日后复测' }))
     await user.click(await screen.findByRole('button', { name: '安排复测' }))
     await waitFor(async () => {
       expect((await db.retests.toArray()).length).toBe(1)
     })
 
-    // 12. 完成这一步后，流程状态如实记录
-    // （完成按钮要求本步有过计时事件，所以先开始）
+    // 11. 完成这一步后，流程状态如实记录
     await user.click(screen.getByRole('button', { name: '开始' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: '完成' })).toBeEnabled())
-    await user.click(screen.getByRole('button', { name: '完成' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '完成这步' })).toBeEnabled())
+    await user.click(screen.getByRole('button', { name: '完成这步' }))
     await waitFor(async () => {
       const s = (await db.sessions.toArray())[0]
       const evs = await listStepEvents(s.id)
@@ -174,21 +167,37 @@ describe('完整学习流程（真实点击）', () => {
     await waitShelf()
 
     await user.click(firstBook())
-    await waitFor(() => expect(window.location.hash).toMatch(/^#\/p\/p_/))
-    await user.click(await screen.findByText('第 3 讲 函数的单调性与导数'))
     await waitFor(() => expect(window.location.hash).toMatch(/\/u\/u_/))
 
     await user.click(await screen.findByRole('button', { name: /数学课后学习/ }))
-    await waitFor(() => expect(screen.getByText(/7 个步骤/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/共 7 步/)).toBeInTheDocument())
 
-    // 完成需要先开始（否则无从记录时长）
     await user.click(screen.getByRole('button', { name: '开始' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: '完成' })).toBeEnabled())
-    await user.click(screen.getByRole('button', { name: '完成' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '暂停' })).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: '完成这步' }))
     await waitFor(async () => {
       const s = (await db.sessions.toArray())[0]
       expect(s.current_step).toBe(1)
       expect(s.status).toBe('in_progress')
     })
+  }, 40_000)
+
+  it('课程表画布能打开并显示单元卡片', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await waitShelf()
+
+    await user.click(firstBook())
+    await waitFor(() => expect(window.location.hash).toMatch(/\/u\/u_/))
+
+    // 选一个流程进入工作台
+    await user.click(await screen.findByRole('button', { name: /数学课后学习/ }))
+    await waitFor(() => expect(screen.getByText(/共 7 步/)).toBeInTheDocument())
+
+    // 工作台右上角「课程表」回到画布
+    await user.click(screen.getByRole('button', { name: '课程表' }))
+    await waitFor(() => expect(window.location.hash).toMatch(/^#\/p\/p_/))
+    expect(await screen.findByText('实线箭头 = 学习顺序')).toBeInTheDocument()
+    await waitFor(() => expect(document.querySelectorAll('.react-flow__node-unit').length).toBeGreaterThan(0))
   }, 40_000)
 })

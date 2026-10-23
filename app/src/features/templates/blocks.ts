@@ -12,6 +12,18 @@ export const BLOCK_LABEL: Record<BlockType, string> = {
   free: '自由任务',
 }
 
+/** 这一步到底要你干什么 —— 用大白话讲清楚，用户不用猜 */
+export const BLOCK_WHAT: Record<BlockType, string> = {
+  organize: '把今天拍的课堂照片传上来，AI 帮你整理成笔记，你再对着原图核对一遍。',
+  recall: '合上答案，在纸上默写公式、把例题自己推一遍。推不动的标记一下。',
+  explain: '把刚才标为「不会」的题搞懂：先看提示，再自己讲一遍。',
+  practice: '做作业。开番茄钟，一题一题来，太久做不出就跳过。',
+  reflect: '写写这次的收获，随便写。',
+  preview: '看一眼下一课大概讲什么，知道重点在哪就行。',
+  retest: '过几天回来，把之前不会的重新做一遍。',
+  free: '临时想到什么就做什么。',
+}
+
 export const BLOCK_DESC: Record<BlockType, string> = {
   organize: '拍照上传课堂照片 → AI 转写整理 → 对照原图校对',
   recall: '遮住答案，在纸上默写或重演，逐条标记掌握情况',
@@ -28,6 +40,7 @@ export function makeBlock(type: BlockType, overrides: Partial<Block> = {}): Bloc
     id: newId('b_'),
     type,
     name: BLOCK_LABEL[type],
+    what: BLOCK_WHAT[type],
     instruction: BLOCK_DESC[type],
     timing: type === 'practice' ? 'pomodoro' : type === 'recall' ? 'manual' : 'none',
     settings: {

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { getDb } from '../../db/db'
-import { Icon } from '../../components/Icon'
 import { useUI } from '../../store/ui'
 import { computeTiming, stepTiming, UNCERTAIN_THRESHOLD } from '../../lib/timer'
 import {
@@ -13,9 +12,9 @@ import {
   updateSession,
 } from '../../db/repo/session'
 import { createDoubt, toggleMark } from '../../db/repo/items'
-import { TimerBar } from './TimerBar'
-import { SidePanel } from './SidePanel'
+import { formatDuration } from '../../lib/time'
 import { StepBody } from './steps/StepBody'
+import { NotesDrawer } from './NotesDrawer'
 import type {
   Attempt,
   AttemptResult,
@@ -27,14 +26,6 @@ import type {
   StepEvent,
   Task,
 } from '../../db/types'
-
-/** 给数据库写入加超时保护：被阻塞时明确报错，而不是静默卡住。 */
-function withTimeout<T>(p: Promise<T>, ms: number, message: string): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
-  ])
-}
 
 export interface WbCtx {
   projectId: string
@@ -60,6 +51,14 @@ export interface WbCtx {
   refresh: () => void
 }
 
+/** 给数据库写入加超时保护：被阻塞时明确报错，而不是静默卡住。 */
+function withTimeout<T>(p: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ])
+}
+
 export function WorkbenchPage() {
   const { projectId = '', unitId = '' } = useParams()
   const navigate = useNavigate()
@@ -67,6 +66,7 @@ export function WorkbenchPage() {
   const { showToast } = useUI()
 
   const unit = useLiveQuery(() => db.units.get(unitId), [unitId])
+  const project = useLiveQuery(() => db.projects.get(projectId), [projectId])
   const chapters = useLiveQuery(
     () => db.chapters.where('project_id').equals(projectId).sortBy('order'),
     [projectId],
@@ -81,8 +81,7 @@ export function WorkbenchPage() {
   const markRows = useLiveQuery(() => db.marks.toArray(), [])
 
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [navOpen, setNavOpen] = useState(false)
-  const [sideOpen, setSideOpen] = useState(false)
+  const [drawer, setDrawer] = useState<'none' | 'notes' | 'ai'>('none')
   const [tick, setTick] = useState(0)
   const [events, setEvents] = useState<StepEvent[]>([])
   const [attempts, setAttempts] = useState<Attempt[]>([])
@@ -157,15 +156,19 @@ export function WorkbenchPage() {
   const steps = session?.template_snapshot ?? []
   const stepIndex = Math.min(session?.current_step ?? 0, Math.max(0, steps.length - 1))
   const step = steps[stepIndex]
+  const stepTimingInfo = step ? stepTiming(timing, step.id) : null
+  const elapsed = stepTimingInfo?.activeMs ?? 0
+  const running = stepTimingInfo?.running ?? false
+  const started = (stepTimingInfo?.lastTs ?? null) !== null
 
-  /* ---------------- 计时动作 ---------------- */
+  /* ---------------- 动作 ---------------- */
 
   const writeEvent = useCallback(
     async (type: Parameters<typeof addStepEvent>[2], opts?: { manual?: boolean; note?: string }) => {
       if (!session || !step) return
       try {
-        await withTimeout(addStepEvent(session.id, step.id, type, opts), 8000, '写入步骤事件超时')
-        await withTimeout(updateSession(session.id, { status: 'in_progress' }), 8000, '更新会话超时')
+        await withTimeout(addStepEvent(session.id, step.id, type, opts), 8000, '写入超时')
+        await withTimeout(updateSession(session.id, { status: 'in_progress' }), 8000, '更新超时')
         await loadEvents()
         refresh()
       } catch (err) {
@@ -178,37 +181,40 @@ export function WorkbenchPage() {
     [session, step, refresh, showToast, loadEvents],
   )
 
-  const onStart = useCallback(async () => {
-    const t = step ? stepTiming(timing, step.id) : null
-    await writeEvent(t?.lastTs ? 'resume' : 'start')
-  }, [writeEvent, step, timing])
-
-  const onPause = useCallback(async () => {
-    await writeEvent('pause')
-  }, [writeEvent])
+  const onToggleTimer = useCallback(async () => {
+    if (running) {
+      await writeEvent('pause')
+      return
+    }
+    await writeEvent(started ? 'resume' : 'start')
+  }, [running, started, writeEvent])
 
   const onComplete = useCallback(async () => {
+    if (!session || !step) return
     await writeEvent('complete')
-    if (session && steps.length) {
-      const next = stepIndex + 1
-      await updateSession(session.id, {
-        current_step: Math.min(next, steps.length - 1),
-        status: next >= steps.length ? 'completed' : 'in_progress',
-        ended_at: next >= steps.length ? Date.now() : null,
-      })
-      refresh()
+    const next = stepIndex + 1
+    await updateSession(session.id, {
+      current_step: Math.min(next, steps.length - 1),
+      status: next >= steps.length ? 'completed' : 'in_progress',
+      ended_at: next >= steps.length ? Date.now() : null,
+    })
+    await loadEvents()
+    refresh()
+    if (next >= steps.length) {
+      showToast('这一轮全部完成 🎉')
+    } else {
+      showToast(`完成「${step.name}」，下一步：${steps[next].name}`)
     }
-    showToast('这一步已完成')
-  }, [writeEvent, session, steps.length, stepIndex, refresh, showToast])
+  }, [session, step, writeEvent, stepIndex, steps, refresh, showToast, loadEvents])
 
   const onSkip = useCallback(async () => {
     await writeEvent('skip')
-    showToast('已记为「跳过」—— 不算完成')
+    showToast('这一步先跳过，不算完成')
   }, [writeEvent, showToast])
 
   const onDefer = useCallback(async () => {
     await writeEvent('defer')
-    showToast('已记为「延后」—— 不算完成')
+    showToast('这一步改天再说，不算完成')
   }, [writeEvent, showToast])
 
   const onConfirmGap = useCallback(
@@ -217,19 +223,18 @@ export function WorkbenchPage() {
       const unc = timing.uncertain
       if (!unc || unc.stepId !== step.id) return
       if (include) {
-        // 计入：补一条结束事件，把这段空白结掉
         await addStepEvent(session.id, step.id, 'pause', { note: '用户确认计入空白区间' })
       } else {
-        // 忽略：在空白开始处截断
         await addStepEvent(session.id, step.id, 'pause', {
           ts: unc.since + UNCERTAIN_THRESHOLD,
           note: '用户确认忽略空白区间',
         })
       }
+      await loadEvents()
       refresh()
-      showToast(include ? '空白区间已计入' : '空白区间已忽略')
+      showToast(include ? '这段时间算进学习时长' : '这段时间不算')
     },
-    [session, step, timing.uncertain, refresh, showToast],
+    [session, step, timing.uncertain, refresh, showToast, loadEvents],
   )
 
   /* ---------------- 标记 / 疑点 / 尝试 ---------------- */
@@ -248,7 +253,7 @@ export function WorkbenchPage() {
             title: it.title,
             context: it.body_md.slice(0, 200),
           })
-          showToast('已记入疑点清单')
+          showToast('已放进「不会清单」')
         }
       }
     },
@@ -265,7 +270,7 @@ export function WorkbenchPage() {
         context: item.body_md.slice(0, 300),
       })
       refresh()
-      showToast('已记入疑点清单')
+      showToast('已放进「不会清单」')
     },
     [projectId, unitId, refresh, showToast],
   )
@@ -306,8 +311,6 @@ export function WorkbenchPage() {
     [session, refresh],
   )
 
-  /* ---------------- 开始一轮 ---------------- */
-
   if (!unit) return <div className="stage" />
 
   if (!session) {
@@ -342,159 +345,121 @@ export function WorkbenchPage() {
     refresh,
   }
 
-  const stepTimingInfo = step ? stepTiming(timing, step.id) : null
-  const unitAttempts = ctx.attempts
+  const uncertain =
+    timing.uncertain && timing.uncertain.stepId === step?.id ? timing.uncertain : null
 
   return (
     <main className="stage stage--flush">
-      <div className="wb">
-        <div className="wb__head">
-          <button className="linkbtn" onClick={() => navigate(`/p/${projectId}`)}>
-            ← {ctx.steps.length ? '项目画布' : ''}
+      <div className="wb2">
+        <header className="wb2__top">
+          <button className="wb2__back" onClick={() => navigate('/')}>
+            ← 书架
           </button>
-          <h1 className="wb__unit">{unit.title}</h1>
-          <span className="wb__meta">
-            {session.template_snapshot.length} 个步骤 · 本轮开始于{' '}
-            {new Date(session.started_at).toLocaleString('zh-CN')}
-          </span>
-          <div className="wb__spacer" />
-          <div className="wb__steps">
+          <div className="wb2__crumb">
+            {project?.name ? `${project.name} · ` : ''}
+            {unit.title}
+          </div>
+          <div className="wb2__tools">
+            <button className="wb2__tool" onClick={() => setDrawer('notes')}>
+              看笔记
+            </button>
+            <button className="wb2__tool" onClick={() => setDrawer('ai')}>
+              问 AI
+            </button>
+            <button className="wb2__tool" onClick={() => navigate(`/p/${projectId}`)}>
+              课程表
+            </button>
+          </div>
+        </header>
+
+        <div className="wb2__progress">
+          <div className="wb2__dots">
             {steps.map((b, i) => {
               const t = stepTiming(timing, b.id)
               const done = t.events.some((e) => e.type === 'complete')
               const skipped = t.events.some((e) => e.type === 'skip')
-              const deferred = t.events.some((e) => e.type === 'defer')
-              const started = t.events.length > 0
               const cls = done
                 ? 'is-done'
                 : skipped
                   ? 'is-skip'
-                  : deferred
-                    ? 'is-defer'
-                    : started
-                      ? 'is-doing'
-                      : 'is-idle'
+                  : t.events.length
+                    ? 'is-doing'
+                    : ''
               return (
                 <button
                   key={b.id}
-                  className={`wstep ${cls}${i === stepIndex ? ' is-current' : ''}`}
+                  className={`wb2__dot ${cls}${i === stepIndex ? ' is-now' : ''}`}
                   onClick={() => goStep(i)}
+                  title={b.name}
                   aria-label={`第 ${i + 1} 步 ${b.name}`}
-                  title={b.instruction}
                 >
-                  <span className="wstep__idx">{i + 1}</span>
-                  <span className="wstep__name">{b.name}</span>
+                  {done ? '✓' : skipped ? '–' : i + 1}
                 </button>
               )
             })}
           </div>
-
-          <button
-            className="iconbtn wb__drawer-btn"
-            title="资料导航"
-            onClick={() => {
-              setNavOpen((v) => !v)
-              setSideOpen(false)
-            }}
-          >
-            <Icon name="folder" size={17} />
-          </button>
-          <button
-            className="iconbtn wb__drawer-btn"
-            title="随手记与 AI"
-            onClick={() => {
-              setSideOpen((v) => !v)
-              setNavOpen(false)
-            }}
-          >
-            <Icon name="info" size={17} />
-          </button>
+          <div className="wb2__now">
+            <div className="wb2__stepno">
+              第 {stepIndex + 1} 步 / 共 {steps.length} 步
+            </div>
+            <h1 className="wb2__stepname">{step?.name}</h1>
+            {step?.what && <p className="wb2__stepwhat">{step.what}</p>}
+          </div>
         </div>
 
-        {step && (
-          <TimerBar
-            timing={stepTimingInfo!}
-            stepName={step.name}
-            stepIndex={stepIndex}
-            stepTotal={steps.length}
-            status={step.timing === 'none' ? '不计时' : step.timing === 'pomodoro' ? '番茄钟' : '手动计时'}
-            onStart={onStart}
-            onPause={onPause}
-            onComplete={onComplete}
-            onSkip={onSkip}
-            onDefer={onDefer}
-            onConfirmGap={onConfirmGap}
-            uncertainMs={
-              timing.uncertain && timing.uncertain.stepId === step.id
-                ? timing.uncertain.ms
-                : undefined
-            }
-            uncertainSince={
-              timing.uncertain && timing.uncertain.stepId === step.id
-                ? timing.uncertain.since
-                : undefined
-            }
+        <div className="wb2__body">
+          {step ? <StepBody ctx={ctx} /> : null}
+        </div>
+
+        <footer className="wb2__foot">
+          {uncertain && (
+            <div className="wb2__gap">
+              <span>刚才有 {formatDuration(uncertain.ms)} 没有动静，算进学习时长吗？</span>
+              <button className="linkbtn" onClick={() => onConfirmGap(true)}>
+                算
+              </button>
+              <button className="linkbtn" onClick={() => onConfirmGap(false)}>
+                不算
+              </button>
+            </div>
+          )}
+          <div className="wb2__bar">
+            <div className="wb2__clock">
+              <span className="wb2__clocklabel">这一步用时</span>
+              <span className={`wb2__clockvalue${running ? ' is-on' : ''}`}>
+                {formatDuration(elapsed)}
+              </span>
+            </div>
+            <button className="btn wb2__toggle" onClick={onToggleTimer}>
+              {running ? '暂停' : started ? '继续' : '开始'}
+            </button>
+            <button className="btn btn--primary wb2__done" onClick={onComplete}>
+              完成这步
+            </button>
+          </div>
+          <div className="wb2__minor">
+            <button className="linkbtn" onClick={onSkip}>
+              先跳过
+            </button>
+            <button className="linkbtn" onClick={onDefer}>
+              改天再说
+            </button>
+          </div>
+        </footer>
+
+        {drawer !== 'none' && (
+          <NotesDrawer
+            mode={drawer}
+            onClose={() => setDrawer('none')}
+            ctx={ctx}
+            chapters={chapters ?? []}
+            allUnits={allUnits ?? []}
+            onOpenUnit={(id) => {
+              setDrawer('none')
+              navigate(`/p/${projectId}/u/${id}`)
+            }}
           />
         )}
-
-        <div className="wb__cols">
-          <aside className={`wb__nav${navOpen ? ' is-open' : ''}`}>
-            <div className="wb__nav-title">资料导航</div>
-            {(chapters ?? []).map((ch) => (
-              <div className="wnav__group" key={ch.id}>
-                <div className="wnav__ch">{ch.name}</div>
-                {(allUnits ?? [])
-                  .filter((u) => u.chapter_id === ch.id)
-                  .map((u) => (
-                    <button
-                      key={u.id}
-                      className={`wnav__unit${u.id === unitId ? ' is-on' : ''}`}
-                      onClick={() => navigate(`/p/${projectId}/u/${u.id}`)}
-                    >
-                      {u.title}
-                    </button>
-                  ))}
-              </div>
-            ))}
-            <div className="wnav__group">
-              <div className="wnav__ch">本单元条目</div>
-              {(items ?? []).map((i) => (
-                <div className="wnav__item" key={i.id}>
-                  <span className={`wnav__kind wnav__kind--${i.kind}`}>
-                    {i.kind === 'theorem'
-                      ? '定'
-                      : i.kind === 'formula'
-                        ? '式'
-                        : i.kind === 'example'
-                          ? '例'
-                          : i.kind === 'answer'
-                            ? '答'
-                            : i.kind === 'summary'
-                              ? '结'
-                              : '记'}
-                  </span>
-                  {i.title}
-                </div>
-              ))}
-              {(items ?? []).length === 0 && <div className="wnav__empty">还没有条目</div>}
-            </div>
-            <button
-              className="btn btn--sm wnav__proof"
-              onClick={() => navigate(`/p/${projectId}/u/${unitId}/proof`)}
-            >
-              <Icon name="info" size={14} />
-              原图校对
-            </button>
-          </aside>
-
-          <main className="wb__main">
-            {step && <StepBody ctx={ctx} />}
-          </main>
-
-          <aside className={`wb__side${sideOpen ? ' is-open' : ''}`}>
-            <SidePanel ctx={ctx} unitAttempts={unitAttempts} />
-          </aside>
-        </div>
       </div>
     </main>
   )
@@ -528,12 +493,15 @@ function StartSession({
   return (
     <main className="stage">
       <div className="start">
-        <h1 className="start__title">{unitTitle}</h1>
-        <p className="start__sub">选一个流程模板开始这一轮学习。模板会在此刻拍快照，之后改模板不影响这一轮。</p>
+        <button className="wb2__back" onClick={() => (location.hash = '#/')}>
+          ← 书架
+        </button>
+        <h1 className="start__title">开始学「{unitTitle}」</h1>
+        <p className="start__sub">选一个流程，系统会照着一步步带你走。选错了也没关系，随时能换。</p>
 
         {sessions && sessions.length > 0 && (
           <div className="start__history">
-            <div className="start__hlabel">历史轮次</div>
+            <div className="start__hlabel">你之前学过</div>
             {sessions
               .sort((a, b) => b.started_at - a.started_at)
               .map((s) => (
@@ -558,13 +526,13 @@ function StartSession({
                   </span>
                 ))}
               </div>
-              <div className="tcard__cta">用这个模板开始 →</div>
+              <div className="tcard__cta">就用这个 →</div>
             </button>
           ))}
         </div>
 
         <div className="start__foot">
-          没找到合适的？去 <a href="#/templates">模板页</a> 复制一个改，或者新建一个空白流程。
+          没有合适的？去 <a href="#/templates">模板</a> 复制一个改，或者自己新建一个空白流程。
         </div>
       </div>
     </main>

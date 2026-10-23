@@ -3,10 +3,11 @@ import { Icon } from '../../components/Icon'
 import { Markdown } from '../../components/Markdown'
 import type { Item, MarkKind } from '../../db/types'
 
+/** 三个大按钮，用大白话，用户不用理解"标记"这个概念 */
 const MARK_OPTIONS: { kind: MarkKind; label: string; hint: string; cls: string }[] = [
-  { kind: 'ok', label: '独立完成', hint: '不看答案自己推出来了', cls: 'ok' },
-  { kind: 'unfamiliar', label: '不熟悉', hint: '卡壳了，但对着答案能懂 —— 回去标记一下', cls: 'unfamiliar' },
-  { kind: 'doubt', label: '有疑问', hint: '完全不理解 —— 应该进疑点清单', cls: 'doubt' },
+  { kind: 'ok', label: '会了', hint: '不看答案自己推出来了', cls: 'ok' },
+  { kind: 'unfamiliar', label: '有点糊', hint: '卡了一下，对答案才懂 —— 回头再看看', cls: 'unfamiliar' },
+  { kind: 'doubt', label: '不会', hint: '完全不懂 —— 自动放进「不会清单」', cls: 'doubt' },
 ]
 
 interface Props {
@@ -81,7 +82,6 @@ export function ItemCard({
                 title={o.hint}
                 onClick={() => onToggleMark(o.kind)}
               >
-                {active && <span className="mchip__dot" />}
                 {o.label}
               </button>
             )
@@ -95,7 +95,7 @@ export function ItemCard({
           )}
           {onAddDoubt && (
             <button className="linkbtn" onClick={() => onAddDoubt(item)}>
-              记入疑点
+              放进不会清单
             </button>
           )}
         </div>

@@ -66,6 +66,8 @@ export interface Block {
   id: string
   type: BlockType
   name: string
+  /** 一句话说明这一步要干什么（大白话，直接显示给用户） */
+  what: string
   instruction: string
   timing: TimingMode
   settings: BlockSettings

@@ -109,8 +109,7 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
   return (
     <div className="step">
       <div className="step__intro">
-        <h2>{ctx.step.name}</h2>
-        <p>{ctx.step.instruction}</p>
+        <p className="step__detail">{ctx.step.instruction}</p>
       </div>
 
       <section className="card">
@@ -179,7 +178,7 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
                     </button>
                   )}
                   <label className="btn btn--sm" title="拍照收录错题">
-                    <Icon name="trash" size={13} />
+                    拍错题
                     <input
                       type="file"
                       accept="image/*"
@@ -191,7 +190,7 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
                     />
                   </label>
                   <label className="btn btn--sm" title="拍照收录好题">
-                    <Icon name="book" size={13} />
+                    拍好题
                     <input
                       type="file"
                       accept="image/*"

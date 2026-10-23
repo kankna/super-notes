@@ -114,7 +114,8 @@ async function main() {
   const clickText = async (text, label = text) => {
     const ok = await evaluate(`(() => {
       const els = [...document.querySelectorAll('button, a, [role=button]')];
-      const el = els.find(e => (e.textContent || '').includes(${JSON.stringify(text)}));
+      const el = els.find(e => (e.textContent || '').trim() === ${JSON.stringify(text)})
+             || els.find(e => (e.textContent || '').includes(${JSON.stringify(text)}));
       if (!el) return false;
       el.click();
       return true;
@@ -134,52 +135,87 @@ async function main() {
     await sleep(350)
   }
 
+  /** 点第 N 个步骤圆点 */
+  const gotoStep = async (n) => {
+    await evaluate(`(() => {
+      const dots = [...document.querySelectorAll('.wb2__dot')];
+      const d = dots[${n} - 1];
+      if (d) d.click();
+    })()`)
+    await sleep(500)
+  }
+
+  const typeInto = async (placeholder, text) => {
+    const ok = await evaluate(`(() => {
+      const ta = [...document.querySelectorAll('textarea')].find(t => t.placeholder.includes(${JSON.stringify(placeholder)}));
+      if (!ta) return false;
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(ta, ${JSON.stringify(text)});
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    })()`)
+    if (!ok) throw new Error(`找不到输入框：${placeholder}`)
+    await sleep(200)
+  }
+
+  /** 截图存档，方便人工核对界面 */
+  const shot = async (name) => {
+    const res = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true })
+    const { writeFileSync, mkdirSync } = await import('node:fs')
+    const dir = join(process.cwd(), 'screenshots')
+    mkdirSync(dir, { recursive: true })
+    const file = join(dir, `${name}.png`)
+    writeFileSync(file, Buffer.from(res.data, 'base64'))
+    console.log('  📷', file)
+  }
+
   console.log('→ 打开站点', SITE)
   await send('Page.navigate', { url: SITE })
   await waitFor(`document.querySelector('.book__title') !== null`, '书架渲染', 20000)
   console.log('  ✓ 书架渲染完成，项目数 =', await evaluate(`document.querySelectorAll('.book__title').length`))
+  await shot('01-书架')
 
-  // 1. 进项目画布
+  // 1. 点书盒 → 直接进这一课
   await clickSelector('.book__title', '书盒')
-  await waitFor(`document.querySelector('.react-flow__node-unit') !== null`, '画布渲染')
-  console.log('  ✓ 项目画布渲染完成，单元数 =', await evaluate(`document.querySelectorAll('.react-flow__node-unit').length`))
+  await waitFor(`document.querySelector('.tcard') !== null`, '选流程')
+  console.log('  ✓ 点书盒直接进了这一课，流程数 =', await evaluate(`document.querySelectorAll('.tcard').length`))
 
-  // 2. 进学习工作台
-  await evaluate(`document.querySelector('.unode__title').click()`)
-  await waitFor(`document.querySelector('.tcard') !== null`, '模板选择页')
-  console.log('  ✓ 进入工作台，模板数 =', await evaluate(`document.querySelectorAll('.tcard').length`))
-
-  // 3. 选模板开始
+  // 2. 选流程开始
   await evaluate(`[...document.querySelectorAll('.tcard')].find(c => c.textContent.includes('数学课后学习')).click()`)
-  await waitFor(`document.querySelector('.wstep') !== null`, '工作台步骤条')
-  console.log('  ✓ 学习已启动，步骤数 =', await evaluate(`document.querySelectorAll('.wstep').length`))
+  await waitFor(`document.querySelector('.wb2__dot') !== null`, '工作台')
+  console.log('  ✓ 开始了，步骤数 =', await evaluate(`document.querySelectorAll('.wb2__dot').length`))
+  console.log('    页面告诉你：', await evaluate(`document.querySelector('.wb2__stepwhat')?.textContent.trim()`))
 
-  // 4. 计时
+  // 3. 计时
   await clickText('开始', '开始计时')
-  await waitFor(`document.querySelector('.tbar__time')?.textContent.trim() !== '00:00'`, '计时器走秒', 8000)
-  console.log('  ✓ 计时运行中，当前 =', await evaluate(`document.querySelector('.tbar__time').textContent.trim()`))
+  await waitFor(
+    `document.querySelector('.wb2__clockvalue')?.textContent.trim() !== '00:00'`,
+    '计时器走秒',
+    8000,
+  )
+  console.log('  ✓ 计时运行中，当前 =', await evaluate(`document.querySelector('.wb2__clockvalue').textContent.trim()`))
+  await shot('02-工作台-接收资料')
 
-  // 5. 先复习：标记不熟悉 + 有疑问
-  await evaluate(`[...document.querySelectorAll('.wstep')].find(b => b.textContent.includes('先复习')).click()`)
-  await sleep(500)
+  // 4. 先复习：标记「有点糊」「不会」
+  await gotoStep(2)
   const marked = await evaluate(`(() => {
     const btns = [...document.querySelectorAll('.mchip')];
-    const un = btns.find(b => b.textContent.includes('不熟悉'));
+    const un = btns.find(b => b.textContent.includes('有点糊'));
     if (un) un.click();
     return btns.length;
   })()`)
-  console.log(`  ✓ 标记控件 ${marked} 个`)
+  console.log(`  ✓ 标记按钮 ${marked} 个`)
+  await sleep(400)
   await evaluate(`(() => {
-    const b = [...document.querySelectorAll('.mchip')].find(x => x.textContent.includes('有疑问'));
+    const b = [...document.querySelectorAll('.mchip')].find(x => x.textContent.includes('不会'));
     if (b) b.click();
   })()`)
   await sleep(600)
 
-  // 6. 弄懂它：疑点清单 + AI 分层提示
-  await evaluate(`[...document.querySelectorAll('.wstep')].find(b => b.textContent.includes('弄懂它')).click()`)
-  await sleep(500)
+  // 5. 弄懂它：不会清单 + AI 分层提示
+  await gotoStep(3)
   const doubtCount = await evaluate(`document.querySelectorAll('.doubt').length`)
-  console.log(`  ✓ 疑点清单条数 = ${doubtCount}`)
+  console.log(`  ✓ 不会清单条数 = ${doubtCount}`)
   await evaluate(`(() => {
     const b = [...document.querySelectorAll('button')].find(x => x.textContent.includes('AI 分层提示'));
     if (b) b.click();
@@ -187,62 +223,56 @@ async function main() {
   await waitFor(`document.body.textContent.includes('第一层提示')`, 'AI 分层提示', 15000)
   console.log('  ✓ AI 分层提示已生成')
 
-  // 7. 去实践：番茄钟 + 任务
-  await evaluate(`[...document.querySelectorAll('.wstep')].find(b => b.textContent.includes('去实践')).click()`)
-  await sleep(500)
+  // 6. 去实践：番茄钟 + 任务
+  await gotoStep(4)
   const pomo = await evaluate(`document.body.textContent.includes('开始专注')`)
   const tasks = await evaluate(`document.querySelectorAll('.task').length`)
   console.log(`  ✓ 番茄钟=${pomo} 任务数=${tasks}`)
+  await shot('03-工作台-去实践')
 
-  // 8. 说感悟
-  await evaluate(`[...document.querySelectorAll('.wstep')].find(b => b.textContent.includes('说感悟')).click()`)
-  await sleep(500)
-  await evaluate(`(() => {
-    const ta = [...document.querySelectorAll('textarea')].find(t => t.placeholder.includes('写完题目'));
-    if (!ta) return false;
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-    setter.call(ta, '这次终于把导数符号和单调性连起来了。');
-    ta.dispatchEvent(new Event('input', { bubbles: true }));
-    return true;
-  })()`)
-  await sleep(200)
+  // 7. 说感悟
+  await gotoStep(5)
+  await typeInto('写完题目', '这次终于把导数符号和单调性连起来了。')
   await clickText('保存心得', '保存心得')
   await sleep(600)
   console.log('  ✓ 心得已保存 =', await evaluate(`document.body.textContent.includes('这次终于把导数符号')`))
 
-  // 9. 先探路
-  await evaluate(`[...document.querySelectorAll('.wstep')].find(b => b.textContent.includes('先探路')).click()`)
-  await sleep(500)
-  await evaluate(`(() => {
-    const ta = [...document.querySelectorAll('textarea')].find(t => t.placeholder.includes('Boss'));
-    if (!ta) return false;
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-    setter.call(ta, '构造函数，把不等式变到同一侧');
-    ta.dispatchEvent(new Event('input', { bubbles: true }));
-    return true;
-  })()`)
-  await sleep(200)
+  // 8. 先探路
+  await gotoStep(6)
+  await typeInto('Boss', '构造函数，把不等式变到同一侧')
   await clickText('保存预习清单', '保存预习清单')
   await sleep(600)
   console.log('  ✓ 预习清单已保存 =', await evaluate(`document.body.textContent.includes('构造函数')`))
 
-  // 10. 日后复测
-  await evaluate(`[...document.querySelectorAll('.wstep')].find(b => b.textContent.includes('日后复测')).click()`)
-  await sleep(500)
+  // 9. 日后复测
+  await gotoStep(7)
   await clickText('安排复测', '安排复测')
   await sleep(600)
   console.log('  ✓ 复测已安排 =', await evaluate(`document.querySelectorAll('.retest').length > 0`))
 
-  // 11. 完成本步
+  // 10. 完成本步
   await clickText('开始', '开始计时(2)')
   await sleep(500)
-  await clickText('完成', '完成')
+  await clickText('完成这步', '完成这步')
   await sleep(700)
-  const state = await evaluate(`(() => {
-    const cur = document.querySelector('.wstep.is-current');
-    return cur ? cur.textContent.trim() : '';
-  })()`)
-  console.log('  ✓ 完成后当前步骤 =', state)
+  console.log('  ✓ 完成后顶部提示 =', await evaluate(`document.querySelector('.wb2__stepno')?.textContent.trim()`))
+
+  // 11. 抽屉：看笔记 / 问 AI
+  await clickText('看笔记', '看笔记')
+  await waitFor(`document.querySelector('.drawer') !== null`, '抽屉')
+  console.log('  ✓ 看笔记抽屉，条目数 =', await evaluate(`document.querySelectorAll('.drawer .wnav__item').length`))
+  await evaluate(`document.querySelector('.drawer__mask').click()`)
+  await sleep(300)
+  await clickText('问 AI', '问 AI')
+  await waitFor(`document.querySelector('.drawer') !== null`, '抽屉2')
+  console.log('  ✓ 问 AI 抽屉 =', await evaluate(`!!document.querySelector('.drawer textarea')`))
+
+  // 12. 课程表
+  await evaluate(`document.querySelector('.drawer__mask').click()`)
+  await sleep(300)
+  await clickText('课程表', '课程表')
+  await waitFor(`document.querySelector('.react-flow__node-unit') !== null`, '画布', 10000)
+  console.log('  ✓ 课程表画布，单元数 =', await evaluate(`document.querySelectorAll('.react-flow__node-unit').length`))
 
   console.log('\n控制台错误：', logs.length ? logs.join(' | ') : '（无）')
   console.log('\n✅ 真实 Chrome 里完整流程跑通')

@@ -56,13 +56,11 @@ describe('照片 → AI 整理 → 原图校对', () => {
 
     // 进单元
     await user.click(document.querySelector('.book__title') as HTMLElement)
-    await waitFor(() => expect(window.location.hash).toMatch(/^#\/p\/p_/))
-    await user.click(await screen.findByText('第 3 讲 函数的单调性与导数'))
     await waitFor(() => expect(window.location.hash).toMatch(/\/u\/u_/))
 
     // 选模板开始
     await user.click(await screen.findByRole('button', { name: /数学课后学习/ }))
-    await waitFor(() => expect(screen.getByText(/7 个步骤/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/共 7 步/)).toBeInTheDocument())
 
     const before = (await db.items.toArray()).length
 
@@ -229,14 +227,14 @@ describe('AI 设置', () => {
     await waitShelf()
 
     window.location.hash = '#/settings/ai'
-    await screen.findByRole('heading', { name: 'AI 服务设置' })
+    await screen.findByRole('heading', { name: 'AI 设置' })
 
-    // Mock 默认开启
-    expect(await screen.findByText(/Mock 模式/)).toBeInTheDocument()
+    // 演示模式默认开启
+    expect(await screen.findByText('演示模式')).toBeInTheDocument()
 
     // 新增配置
-    await user.click(screen.getByRole('button', { name: '+ 新增配置' }))
-    const nameBox = await screen.findByPlaceholderText('例如：DeepSeek 主账号')
+    await user.click(screen.getByRole('button', { name: '+ 新增' }))
+    const nameBox = await screen.findByPlaceholderText('例如：DeepSeek')
     await user.type(nameBox, 'DeepSeek')
     const modelBox = document.querySelector('input[placeholder="deepseek-v4-flash"]') as HTMLInputElement
     await user.clear(modelBox)
@@ -249,7 +247,8 @@ describe('AI 设置', () => {
       expect(cfgs[0].name).toBe('DeepSeek')
     })
 
-    // 能力映射
+    // 能力映射（在"更多"折叠区里）
+    await user.click(screen.getByText(/更多（谁用哪个模型/))
     const selects = await screen.findAllByRole('combobox')
     const mapSelect = selects.find((s) =>
       Array.from(s.querySelectorAll('option')).some((o) => o.textContent === 'DeepSeek'),

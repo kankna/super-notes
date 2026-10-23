@@ -50,8 +50,7 @@ export function ReflectStep({ ctx }: { ctx: WbCtx }) {
   return (
     <div className="step">
       <div className="step__intro">
-        <h2>{ctx.step.name}</h2>
-        <p>{ctx.step.instruction}</p>
+        <p className="step__detail">{ctx.step.instruction}</p>
       </div>
 
       {guidance.length > 0 && (
