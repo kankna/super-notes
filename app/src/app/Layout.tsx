@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { getDb } from '../db/db'
 import { Icon } from '../components/Icon'
 import { useUI } from '../store/ui'
-import { ThemePicker, useTheme } from './ThemePicker'
+import { AppearancePicker, useAppearance } from './ThemePicker'
 
 /** 顶栏只留"家"和"更多"，其他都收进去 */
 const MORE_ITEMS = [
@@ -21,7 +21,7 @@ export function Layout() {
   const { reducedMotion, toggleReducedMotion, toast, hideToast } = useUI()
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [theme, setTheme] = useTheme()
+  const { mode, accent, setMode, setAccent } = useAppearance()
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   const trashCount = useLiveQuery(() => db.trash.count(), [])
@@ -88,7 +88,12 @@ export function Layout() {
           <Icon name="motion" size={17} />
         </button>
 
-        <ThemePicker theme={theme} onChange={setTheme} />
+        <AppearancePicker
+          mode={mode}
+          accent={accent}
+          onMode={setMode}
+          onAccent={setAccent}
+        />
 
         <div className="topbar__menu" ref={menuRef}>
           <button

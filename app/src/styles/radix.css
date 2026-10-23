@@ -1,5 +1,304 @@
-/* Radix UI Colors v3.0.0 —— 深色主题色值（MIT）https://www.radix-ui.com/colors */
-:root {
+/* Radix UI Colors v3.0.0 —— 浅色/深色两套色阶（MIT）https://www.radix-ui.com/colors */
+/* :root = 浅色，[data-mode='dark'] = 深色 */
+
+:root, :root {
+  --slate-1: #fcfcfd;
+  --slate-2: #f9f9fb;
+  --slate-3: #f0f0f3;
+  --slate-4: #e8e8ec;
+  --slate-5: #e0e1e6;
+  --slate-6: #d9d9e0;
+  --slate-7: #cdced6;
+  --slate-8: #b9bbc6;
+  --slate-9: #8b8d98;
+  --slate-10: #80838d;
+  --slate-11: #60646c;
+  --slate-12: #1c2024;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --slate-1: color(display-p3 0.988 0.988 0.992);
+      --slate-2: color(display-p3 0.976 0.976 0.984);
+      --slate-3: color(display-p3 0.94 0.941 0.953);
+      --slate-4: color(display-p3 0.908 0.909 0.925);
+      --slate-5: color(display-p3 0.88 0.881 0.901);
+      --slate-6: color(display-p3 0.85 0.852 0.876);
+      --slate-7: color(display-p3 0.805 0.808 0.838);
+      --slate-8: color(display-p3 0.727 0.733 0.773);
+      --slate-9: color(display-p3 0.547 0.553 0.592);
+      --slate-10: color(display-p3 0.503 0.512 0.549);
+      --slate-11: color(display-p3 0.379 0.392 0.421);
+      --slate-12: color(display-p3 0.113 0.125 0.14);
+    }
+  }
+}
+:root, :root {
+  --indigo-1: #fdfdfe;
+  --indigo-2: #f7f9ff;
+  --indigo-3: #edf2fe;
+  --indigo-4: #e1e9ff;
+  --indigo-5: #d2deff;
+  --indigo-6: #c1d0ff;
+  --indigo-7: #abbdf9;
+  --indigo-8: #8da4ef;
+  --indigo-9: #3e63dd;
+  --indigo-10: #3358d4;
+  --indigo-11: #3a5bc7;
+  --indigo-12: #1f2d5c;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --indigo-1: color(display-p3 0.992 0.992 0.996);
+      --indigo-2: color(display-p3 0.971 0.977 0.998);
+      --indigo-3: color(display-p3 0.933 0.948 0.992);
+      --indigo-4: color(display-p3 0.885 0.914 1);
+      --indigo-5: color(display-p3 0.831 0.87 1);
+      --indigo-6: color(display-p3 0.767 0.814 0.995);
+      --indigo-7: color(display-p3 0.685 0.74 0.957);
+      --indigo-8: color(display-p3 0.569 0.639 0.916);
+      --indigo-9: color(display-p3 0.276 0.384 0.837);
+      --indigo-10: color(display-p3 0.234 0.343 0.801);
+      --indigo-11: color(display-p3 0.256 0.354 0.755);
+      --indigo-12: color(display-p3 0.133 0.175 0.348);
+    }
+  }
+}
+:root, :root {
+  --teal-1: #fafefd;
+  --teal-2: #f3fbf9;
+  --teal-3: #e0f8f3;
+  --teal-4: #ccf3ea;
+  --teal-5: #b8eae0;
+  --teal-6: #a1ded2;
+  --teal-7: #83cdc1;
+  --teal-8: #53b9ab;
+  --teal-9: #12a594;
+  --teal-10: #0d9b8a;
+  --teal-11: #008573;
+  --teal-12: #0d3d38;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --teal-1: color(display-p3 0.983 0.996 0.992);
+      --teal-2: color(display-p3 0.958 0.983 0.976);
+      --teal-3: color(display-p3 0.895 0.971 0.952);
+      --teal-4: color(display-p3 0.831 0.949 0.92);
+      --teal-5: color(display-p3 0.761 0.914 0.878);
+      --teal-6: color(display-p3 0.682 0.864 0.825);
+      --teal-7: color(display-p3 0.581 0.798 0.756);
+      --teal-8: color(display-p3 0.433 0.716 0.671);
+      --teal-9: color(display-p3 0.297 0.637 0.581);
+      --teal-10: color(display-p3 0.275 0.599 0.542);
+      --teal-11: color(display-p3 0.08 0.5 0.43);
+      --teal-12: color(display-p3 0.11 0.235 0.219);
+    }
+  }
+}
+:root, :root {
+  --amber-1: #fefdfb;
+  --amber-2: #fefbe9;
+  --amber-3: #fff7c2;
+  --amber-4: #ffee9c;
+  --amber-5: #fbe577;
+  --amber-6: #f3d673;
+  --amber-7: #e9c162;
+  --amber-8: #e2a336;
+  --amber-9: #ffc53d;
+  --amber-10: #ffba18;
+  --amber-11: #ab6400;
+  --amber-12: #4f3422;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --amber-1: color(display-p3 0.995 0.992 0.985);
+      --amber-2: color(display-p3 0.994 0.986 0.921);
+      --amber-3: color(display-p3 0.994 0.969 0.782);
+      --amber-4: color(display-p3 0.989 0.937 0.65);
+      --amber-5: color(display-p3 0.97 0.902 0.527);
+      --amber-6: color(display-p3 0.936 0.844 0.506);
+      --amber-7: color(display-p3 0.89 0.762 0.443);
+      --amber-8: color(display-p3 0.85 0.65 0.3);
+      --amber-9: color(display-p3 1 0.77 0.26);
+      --amber-10: color(display-p3 0.959 0.741 0.274);
+      --amber-11: color(display-p3 0.64 0.4 0);
+      --amber-12: color(display-p3 0.294 0.208 0.145);
+    }
+  }
+}
+:root, :root {
+  --orange-1: #fefcfb;
+  --orange-2: #fff7ed;
+  --orange-3: #ffefd6;
+  --orange-4: #ffdfb5;
+  --orange-5: #ffd19a;
+  --orange-6: #ffc182;
+  --orange-7: #f5ae73;
+  --orange-8: #ec9455;
+  --orange-9: #f76b15;
+  --orange-10: #ef5f00;
+  --orange-11: #cc4e00;
+  --orange-12: #582d1d;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --orange-1: color(display-p3 0.995 0.988 0.985);
+      --orange-2: color(display-p3 0.994 0.968 0.934);
+      --orange-3: color(display-p3 0.989 0.938 0.85);
+      --orange-4: color(display-p3 1 0.874 0.687);
+      --orange-5: color(display-p3 1 0.821 0.583);
+      --orange-6: color(display-p3 0.975 0.767 0.545);
+      --orange-7: color(display-p3 0.919 0.693 0.486);
+      --orange-8: color(display-p3 0.877 0.597 0.379);
+      --orange-9: color(display-p3 0.9 0.45 0.2);
+      --orange-10: color(display-p3 0.87 0.409 0.164);
+      --orange-11: color(display-p3 0.76 0.34 0);
+      --orange-12: color(display-p3 0.323 0.185 0.127);
+    }
+  }
+}
+:root, :root {
+  --violet-1: #fdfcfe;
+  --violet-2: #faf8ff;
+  --violet-3: #f4f0fe;
+  --violet-4: #ebe4ff;
+  --violet-5: #e1d9ff;
+  --violet-6: #d4cafe;
+  --violet-7: #c2b5f5;
+  --violet-8: #aa99ec;
+  --violet-9: #6e56cf;
+  --violet-10: #654dc4;
+  --violet-11: #6550b9;
+  --violet-12: #2f265f;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --violet-1: color(display-p3 0.991 0.988 0.995);
+      --violet-2: color(display-p3 0.978 0.974 0.998);
+      --violet-3: color(display-p3 0.953 0.943 0.993);
+      --violet-4: color(display-p3 0.916 0.897 1);
+      --violet-5: color(display-p3 0.876 0.851 1);
+      --violet-6: color(display-p3 0.825 0.793 0.981);
+      --violet-7: color(display-p3 0.752 0.712 0.943);
+      --violet-8: color(display-p3 0.654 0.602 0.902);
+      --violet-9: color(display-p3 0.417 0.341 0.784);
+      --violet-10: color(display-p3 0.381 0.306 0.741);
+      --violet-11: color(display-p3 0.383 0.317 0.702);
+      --violet-12: color(display-p3 0.179 0.15 0.359);
+    }
+  }
+}
+:root, :root {
+  --red-1: #fffcfc;
+  --red-2: #fff7f7;
+  --red-3: #feebec;
+  --red-4: #ffdbdc;
+  --red-5: #ffcdce;
+  --red-6: #fdbdbe;
+  --red-7: #f4a9aa;
+  --red-8: #eb8e90;
+  --red-9: #e5484d;
+  --red-10: #dc3e42;
+  --red-11: #ce2c31;
+  --red-12: #641723;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --red-1: color(display-p3 0.998 0.989 0.988);
+      --red-2: color(display-p3 0.995 0.971 0.971);
+      --red-3: color(display-p3 0.985 0.925 0.925);
+      --red-4: color(display-p3 0.999 0.866 0.866);
+      --red-5: color(display-p3 0.984 0.812 0.811);
+      --red-6: color(display-p3 0.955 0.751 0.749);
+      --red-7: color(display-p3 0.915 0.675 0.672);
+      --red-8: color(display-p3 0.872 0.575 0.572);
+      --red-9: color(display-p3 0.83 0.329 0.324);
+      --red-10: color(display-p3 0.798 0.294 0.285);
+      --red-11: color(display-p3 0.744 0.234 0.222);
+      --red-12: color(display-p3 0.36 0.115 0.143);
+    }
+  }
+}
+:root, :root {
+  --green-1: #fbfefc;
+  --green-2: #f4fbf6;
+  --green-3: #e6f6eb;
+  --green-4: #d6f1df;
+  --green-5: #c4e8d1;
+  --green-6: #adddc0;
+  --green-7: #8eceaa;
+  --green-8: #5bb98b;
+  --green-9: #30a46c;
+  --green-10: #2b9a66;
+  --green-11: #218358;
+  --green-12: #193b2d;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --green-1: color(display-p3 0.986 0.996 0.989);
+      --green-2: color(display-p3 0.963 0.983 0.967);
+      --green-3: color(display-p3 0.913 0.964 0.925);
+      --green-4: color(display-p3 0.859 0.94 0.879);
+      --green-5: color(display-p3 0.796 0.907 0.826);
+      --green-6: color(display-p3 0.718 0.863 0.761);
+      --green-7: color(display-p3 0.61 0.801 0.675);
+      --green-8: color(display-p3 0.451 0.715 0.559);
+      --green-9: color(display-p3 0.332 0.634 0.442);
+      --green-10: color(display-p3 0.308 0.595 0.417);
+      --green-11: color(display-p3 0.19 0.5 0.32);
+      --green-12: color(display-p3 0.132 0.228 0.18);
+    }
+  }
+}
+:root, :root {
+  --tomato-1: #fffcfc;
+  --tomato-2: #fff8f7;
+  --tomato-3: #feebe7;
+  --tomato-4: #ffdcd3;
+  --tomato-5: #ffcdc2;
+  --tomato-6: #fdbdaf;
+  --tomato-7: #f5a898;
+  --tomato-8: #ec8e7b;
+  --tomato-9: #e54d2e;
+  --tomato-10: #dd4425;
+  --tomato-11: #d13415;
+  --tomato-12: #5c271f;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root, :root {
+      --tomato-1: color(display-p3 0.998 0.989 0.988);
+      --tomato-2: color(display-p3 0.994 0.974 0.969);
+      --tomato-3: color(display-p3 0.985 0.924 0.909);
+      --tomato-4: color(display-p3 0.996 0.868 0.835);
+      --tomato-5: color(display-p3 0.98 0.812 0.77);
+      --tomato-6: color(display-p3 0.953 0.75 0.698);
+      --tomato-7: color(display-p3 0.917 0.673 0.611);
+      --tomato-8: color(display-p3 0.875 0.575 0.502);
+      --tomato-9: color(display-p3 0.831 0.345 0.231);
+      --tomato-10: color(display-p3 0.802 0.313 0.2);
+      --tomato-11: color(display-p3 0.755 0.259 0.152);
+      --tomato-12: color(display-p3 0.335 0.165 0.132);
+    }
+  }
+}
+[data-mode='dark'] {
   --slate-1: #111113;
   --slate-2: #18191b;
   --slate-3: #212225;
@@ -16,7 +315,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --slate-1: color(display-p3 0.067 0.067 0.074);
       --slate-2: color(display-p3 0.095 0.098 0.105);
       --slate-3: color(display-p3 0.13 0.135 0.145);
@@ -32,40 +331,7 @@
     }
   }
 }
-:root {
-  --slate-a1: #00000000;
-  --slate-a2: #d8f4f609;
-  --slate-a3: #ddeaf814;
-  --slate-a4: #d3edf81d;
-  --slate-a5: #d9edfe25;
-  --slate-a6: #d6ebfd30;
-  --slate-a7: #d9edff40;
-  --slate-a8: #d9edff5d;
-  --slate-a9: #dfebfd6d;
-  --slate-a10: #e5edfd7b;
-  --slate-a11: #f1f7feb5;
-  --slate-a12: #fcfdffef;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --slate-a1: color(display-p3 0 0 0 / 0);
-      --slate-a2: color(display-p3 0.875 0.992 1 / 0.034);
-      --slate-a3: color(display-p3 0.882 0.933 0.992 / 0.077);
-      --slate-a4: color(display-p3 0.882 0.953 0.996 / 0.111);
-      --slate-a5: color(display-p3 0.878 0.929 0.996 / 0.145);
-      --slate-a6: color(display-p3 0.882 0.949 0.996 / 0.183);
-      --slate-a7: color(display-p3 0.882 0.929 1 / 0.246);
-      --slate-a8: color(display-p3 0.871 0.937 1 / 0.361);
-      --slate-a9: color(display-p3 0.898 0.937 1 / 0.42);
-      --slate-a10: color(display-p3 0.918 0.945 1 / 0.475);
-      --slate-a11: color(display-p3 0.949 0.969 0.996 / 0.708);
-      --slate-a12: color(display-p3 0.988 0.992 1 / 0.937);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --indigo-1: #11131f;
   --indigo-2: #141726;
   --indigo-3: #182449;
@@ -82,7 +348,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --indigo-1: color(display-p3 0.068 0.074 0.118);
       --indigo-2: color(display-p3 0.081 0.089 0.144);
       --indigo-3: color(display-p3 0.105 0.141 0.275);
@@ -98,40 +364,7 @@
     }
   }
 }
-:root {
-  --indigo-a1: #1133ff0f;
-  --indigo-a2: #3354fa17;
-  --indigo-a3: #2f62ff3c;
-  --indigo-a4: #3566ff57;
-  --indigo-a5: #4171fd6b;
-  --indigo-a6: #5178fd7c;
-  --indigo-a7: #5a7fff90;
-  --indigo-a8: #5b81feac;
-  --indigo-a9: #4671ffdb;
-  --indigo-a10: #5c7efee3;
-  --indigo-a11: #9eb1ff;
-  --indigo-a12: #d6e1ff;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --indigo-a1: color(display-p3 0.071 0.212 0.996 / 0.055);
-      --indigo-a2: color(display-p3 0.251 0.345 0.988 / 0.085);
-      --indigo-a3: color(display-p3 0.243 0.404 1 / 0.223);
-      --indigo-a4: color(display-p3 0.263 0.42 1 / 0.324);
-      --indigo-a5: color(display-p3 0.314 0.451 1 / 0.4);
-      --indigo-a6: color(display-p3 0.361 0.49 1 / 0.467);
-      --indigo-a7: color(display-p3 0.388 0.51 1 / 0.547);
-      --indigo-a8: color(display-p3 0.404 0.518 1 / 0.652);
-      --indigo-a9: color(display-p3 0.318 0.451 1 / 0.824);
-      --indigo-a10: color(display-p3 0.404 0.506 1 / 0.858);
-      --indigo-a11: color(display-p3 0.63 0.69 1);
-      --indigo-a12: color(display-p3 0.848 0.881 0.99);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --teal-1: #0d1514;
   --teal-2: #111c1b;
   --teal-3: #0d2d2a;
@@ -148,7 +381,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --teal-1: color(display-p3 0.059 0.083 0.079);
       --teal-2: color(display-p3 0.075 0.11 0.107);
       --teal-3: color(display-p3 0.087 0.175 0.165);
@@ -164,40 +397,7 @@
     }
   }
 }
-:root {
-  --teal-a1: #00deab05;
-  --teal-a2: #12fbe60c;
-  --teal-a3: #00ffe61e;
-  --teal-a4: #00ffe92d;
-  --teal-a5: #00ffea3b;
-  --teal-a6: #1cffe84b;
-  --teal-a7: #2efde85f;
-  --teal-a8: #32ffe775;
-  --teal-a9: #13ffe49f;
-  --teal-a10: #0dffe0ae;
-  --teal-a11: #0afed5d6;
-  --teal-a12: #b8ffebef;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --teal-a1: color(display-p3 0 0.992 0.761 / 0.017);
-      --teal-a2: color(display-p3 0.235 0.988 0.902 / 0.047);
-      --teal-a3: color(display-p3 0.235 1 0.898 / 0.118);
-      --teal-a4: color(display-p3 0.18 0.996 0.929 / 0.173);
-      --teal-a5: color(display-p3 0.31 1 0.933 / 0.227);
-      --teal-a6: color(display-p3 0.396 1 0.933 / 0.286);
-      --teal-a7: color(display-p3 0.443 1 0.925 / 0.366);
-      --teal-a8: color(display-p3 0.459 1 0.925 / 0.454);
-      --teal-a9: color(display-p3 0.443 0.996 0.906 / 0.61);
-      --teal-a10: color(display-p3 0.439 0.996 0.89 / 0.669);
-      --teal-a11: color(display-p3 0.388 0.835 0.719);
-      --teal-a12: color(display-p3 0.734 0.934 0.87);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --amber-1: #16120c;
   --amber-2: #1d180f;
   --amber-3: #302008;
@@ -214,7 +414,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --amber-1: color(display-p3 0.082 0.07 0.05);
       --amber-2: color(display-p3 0.111 0.094 0.064);
       --amber-3: color(display-p3 0.178 0.128 0.049);
@@ -230,40 +430,7 @@
     }
   }
 }
-:root {
-  --amber-a1: #e63c0006;
-  --amber-a2: #fd9b000d;
-  --amber-a3: #fa820022;
-  --amber-a4: #fc820032;
-  --amber-a5: #fd8b0041;
-  --amber-a6: #fd9b0051;
-  --amber-a7: #ffab2567;
-  --amber-a8: #ffae3587;
-  --amber-a9: #ffc53d;
-  --amber-a10: #ffd60a;
-  --amber-a11: #ffca16;
-  --amber-a12: #ffe7b3;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --amber-a1: color(display-p3 0.992 0.298 0 / 0.017);
-      --amber-a2: color(display-p3 0.988 0.651 0 / 0.047);
-      --amber-a3: color(display-p3 1 0.6 0 / 0.118);
-      --amber-a4: color(display-p3 1 0.557 0 / 0.185);
-      --amber-a5: color(display-p3 1 0.592 0 / 0.24);
-      --amber-a6: color(display-p3 1 0.659 0.094 / 0.299);
-      --amber-a7: color(display-p3 1 0.714 0.263 / 0.383);
-      --amber-a8: color(display-p3 0.996 0.729 0.306 / 0.5);
-      --amber-a9: color(display-p3 1 0.769 0.259);
-      --amber-a10: color(display-p3 1 0.871 0.149);
-      --amber-a11: color(display-p3 1 0.8 0.29);
-      --amber-a12: color(display-p3 0.984 0.909 0.726);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --orange-1: #17120e;
   --orange-2: #1e160f;
   --orange-3: #331e0b;
@@ -280,7 +447,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --orange-1: color(display-p3 0.088 0.07 0.057);
       --orange-2: color(display-p3 0.113 0.089 0.061);
       --orange-3: color(display-p3 0.189 0.12 0.056);
@@ -296,40 +463,7 @@
     }
   }
 }
-:root {
-  --orange-a1: #ec360007;
-  --orange-a2: #fe6d000e;
-  --orange-a3: #fb6a0025;
-  --orange-a4: #ff590039;
-  --orange-a5: #ff61004a;
-  --orange-a6: #fd75045c;
-  --orange-a7: #ff832c75;
-  --orange-a8: #fe84389d;
-  --orange-a9: #fe6d15f7;
-  --orange-a10: #ff801f;
-  --orange-a11: #ffa057;
-  --orange-a12: #ffe0c2;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --orange-a1: color(display-p3 0.961 0.247 0 / 0.022);
-      --orange-a2: color(display-p3 0.992 0.529 0 / 0.051);
-      --orange-a3: color(display-p3 0.996 0.486 0 / 0.131);
-      --orange-a4: color(display-p3 0.996 0.384 0 / 0.211);
-      --orange-a5: color(display-p3 1 0.455 0 / 0.265);
-      --orange-a6: color(display-p3 1 0.529 0.129 / 0.332);
-      --orange-a7: color(display-p3 1 0.569 0.251 / 0.429);
-      --orange-a8: color(display-p3 1 0.584 0.302 / 0.572);
-      --orange-a9: color(display-p3 1 0.494 0.216 / 0.895);
-      --orange-a10: color(display-p3 1 0.522 0.235 / 0.979);
-      --orange-a11: color(display-p3 1 0.63 0.38);
-      --orange-a12: color(display-p3 0.98 0.883 0.775);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --violet-1: #14121f;
   --violet-2: #1b1525;
   --violet-3: #291f43;
@@ -346,7 +480,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --violet-1: color(display-p3 0.077 0.071 0.118);
       --violet-2: color(display-p3 0.101 0.084 0.141);
       --violet-3: color(display-p3 0.154 0.123 0.256);
@@ -362,40 +496,7 @@
     }
   }
 }
-:root {
-  --violet-a1: #4422ff0f;
-  --violet-a2: #853ff916;
-  --violet-a3: #8354fe36;
-  --violet-a4: #7d51fd50;
-  --violet-a5: #845ffd5f;
-  --violet-a6: #8f6cfd6d;
-  --violet-a7: #9879ff83;
-  --violet-a8: #977dfea8;
-  --violet-a9: #8668ffcc;
-  --violet-a10: #9176fed7;
-  --violet-a11: #baa7ff;
-  --violet-a12: #e3defffe;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --violet-a1: color(display-p3 0.282 0.141 0.996 / 0.055);
-      --violet-a2: color(display-p3 0.51 0.263 1 / 0.08);
-      --violet-a3: color(display-p3 0.494 0.337 0.996 / 0.202);
-      --violet-a4: color(display-p3 0.49 0.345 1 / 0.299);
-      --violet-a5: color(display-p3 0.525 0.392 1 / 0.353);
-      --violet-a6: color(display-p3 0.569 0.455 1 / 0.408);
-      --violet-a7: color(display-p3 0.588 0.494 1 / 0.496);
-      --violet-a8: color(display-p3 0.596 0.51 1 / 0.631);
-      --violet-a9: color(display-p3 0.522 0.424 1 / 0.769);
-      --violet-a10: color(display-p3 0.576 0.482 1 / 0.811);
-      --violet-a11: color(display-p3 0.72 0.65 1);
-      --violet-a12: color(display-p3 0.883 0.867 0.986);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --red-1: #191111;
   --red-2: #201314;
   --red-3: #3b1219;
@@ -412,7 +513,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --red-1: color(display-p3 0.093 0.068 0.067);
       --red-2: color(display-p3 0.118 0.077 0.079);
       --red-3: color(display-p3 0.211 0.081 0.099);
@@ -428,40 +529,7 @@
     }
   }
 }
-:root {
-  --red-a1: #f4121209;
-  --red-a2: #f22f3e11;
-  --red-a3: #ff173f2d;
-  --red-a4: #fe0a3b44;
-  --red-a5: #ff204756;
-  --red-a6: #ff3e5668;
-  --red-a7: #ff536184;
-  --red-a8: #ff5d61b0;
-  --red-a9: #fe4e54e4;
-  --red-a10: #ff6465eb;
-  --red-a11: #ff9592;
-  --red-a12: #ffd1d9;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --red-a1: color(display-p3 0.984 0.071 0.071 / 0.03);
-      --red-a2: color(display-p3 0.996 0.282 0.282 / 0.055);
-      --red-a3: color(display-p3 1 0.169 0.271 / 0.156);
-      --red-a4: color(display-p3 1 0.118 0.267 / 0.236);
-      --red-a5: color(display-p3 1 0.212 0.314 / 0.303);
-      --red-a6: color(display-p3 1 0.318 0.38 / 0.374);
-      --red-a7: color(display-p3 1 0.4 0.424 / 0.475);
-      --red-a8: color(display-p3 1 0.431 0.431 / 0.635);
-      --red-a9: color(display-p3 1 0.388 0.384 / 0.82);
-      --red-a10: color(display-p3 1 0.463 0.447 / 0.853);
-      --red-a11: color(display-p3 1 0.57 0.55);
-      --red-a12: color(display-p3 0.971 0.826 0.852);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --green-1: #0e1512;
   --green-2: #121b17;
   --green-3: #132d21;
@@ -478,7 +546,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --green-1: color(display-p3 0.062 0.083 0.071);
       --green-2: color(display-p3 0.079 0.106 0.09);
       --green-3: color(display-p3 0.1 0.173 0.133);
@@ -494,40 +562,7 @@
     }
   }
 }
-:root {
-  --green-a1: #00de4505;
-  --green-a2: #29f99d0b;
-  --green-a3: #22ff991e;
-  --green-a4: #11ff992d;
-  --green-a5: #2bffa23c;
-  --green-a6: #44ffaa4b;
-  --green-a7: #50fdac5e;
-  --green-a8: #54ffad73;
-  --green-a9: #44ffa49e;
-  --green-a10: #43fea4ab;
-  --green-a11: #46fea5d4;
-  --green-a12: #bbffd7f0;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --green-a1: color(display-p3 0 0.992 0.298 / 0.017);
-      --green-a2: color(display-p3 0.341 0.98 0.616 / 0.043);
-      --green-a3: color(display-p3 0.376 0.996 0.655 / 0.114);
-      --green-a4: color(display-p3 0.341 0.996 0.635 / 0.173);
-      --green-a5: color(display-p3 0.408 1 0.678 / 0.232);
-      --green-a6: color(display-p3 0.475 1 0.706 / 0.29);
-      --green-a7: color(display-p3 0.514 1 0.706 / 0.362);
-      --green-a8: color(display-p3 0.529 1 0.718 / 0.442);
-      --green-a9: color(display-p3 0.502 0.996 0.682 / 0.61);
-      --green-a10: color(display-p3 0.506 1 0.682 / 0.66);
-      --green-a11: color(display-p3 0.434 0.828 0.573);
-      --green-a12: color(display-p3 0.747 0.938 0.807);
-    }
-  }
-}
-:root {
+[data-mode='dark'] {
   --tomato-1: #181111;
   --tomato-2: #1f1513;
   --tomato-3: #391714;
@@ -544,7 +579,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-    :root {
+    [data-mode='dark'] {
       --tomato-1: color(display-p3 0.09 0.068 0.067);
       --tomato-2: color(display-p3 0.115 0.084 0.076);
       --tomato-3: color(display-p3 0.205 0.097 0.083);
@@ -557,39 +592,6 @@
       --tomato-10: color(display-p3 0.862 0.415 0.298);
       --tomato-11: color(display-p3 1 0.585 0.455);
       --tomato-12: color(display-p3 0.959 0.833 0.802);
-    }
-  }
-}
-:root {
-  --tomato-a1: #f1121208;
-  --tomato-a2: #ff55330f;
-  --tomato-a3: #ff35232b;
-  --tomato-a4: #fd201142;
-  --tomato-a5: #fe332153;
-  --tomato-a6: #ff4f3864;
-  --tomato-a7: #fd644a7d;
-  --tomato-a8: #fe6d4ea7;
-  --tomato-a9: #fe5431e4;
-  --tomato-a10: #ff6847eb;
-  --tomato-a11: #ff977d;
-  --tomato-a12: #ffd6cefb;
-}
-
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    :root {
-      --tomato-a1: color(display-p3 0.973 0.071 0.071 / 0.026);
-      --tomato-a2: color(display-p3 0.992 0.376 0.224 / 0.051);
-      --tomato-a3: color(display-p3 0.996 0.282 0.176 / 0.148);
-      --tomato-a4: color(display-p3 1 0.204 0.118 / 0.232);
-      --tomato-a5: color(display-p3 1 0.286 0.192 / 0.29);
-      --tomato-a6: color(display-p3 1 0.392 0.278 / 0.353);
-      --tomato-a7: color(display-p3 1 0.459 0.349 / 0.45);
-      --tomato-a8: color(display-p3 1 0.49 0.369 / 0.601);
-      --tomato-a9: color(display-p3 1 0.408 0.267 / 0.82);
-      --tomato-a10: color(display-p3 1 0.478 0.341 / 0.853);
-      --tomato-a11: color(display-p3 1 0.585 0.455);
-      --tomato-a12: color(display-p3 0.959 0.833 0.802);
     }
   }
 }

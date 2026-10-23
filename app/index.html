@@ -8,6 +8,23 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="./icons.svg" />
     <title>书斋 · Super Notes</title>
+    <script>
+      // 在首帧之前定好模式与强调色，避免闪一下白/黑
+      ;(function () {
+        try {
+          var m = localStorage.getItem('sn.mode')
+          if (m !== 'light' && m !== 'dark') {
+            m = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+          }
+          var a = localStorage.getItem('sn.accent') || 'indigo'
+          document.documentElement.setAttribute('data-mode', m)
+          document.documentElement.setAttribute('data-accent', a)
+        } catch (e) {
+          document.documentElement.setAttribute('data-mode', 'dark')
+          document.documentElement.setAttribute('data-accent', 'indigo')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

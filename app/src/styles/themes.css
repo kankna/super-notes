@@ -1,6 +1,6 @@
 /* 主题色切换：把 --accent-* 指向不同的 Radix 色阶 */
 
-[data-theme='indigo'] {
+[data-accent='indigo'] {
   --accent-1: var(--indigo-1);
   --accent-2: var(--indigo-2);
   --accent-3: var(--indigo-3);
@@ -28,7 +28,7 @@
   --on-accent: #ffffff;
 }
 
-[data-theme='teal'] {
+[data-accent='teal'] {
   --accent-1: var(--teal-1);
   --accent-2: var(--teal-2);
   --accent-3: var(--teal-3);
@@ -56,7 +56,7 @@
   --on-accent: #0d1514;
 }
 
-[data-theme='amber'] {
+[data-accent='amber'] {
   --accent-1: var(--amber-1);
   --accent-2: var(--amber-2);
   --accent-3: var(--amber-3);
@@ -84,7 +84,7 @@
   --on-accent: #16120c;
 }
 
-[data-theme='violet'] {
+[data-accent='violet'] {
   --accent-1: var(--violet-1);
   --accent-2: var(--violet-2);
   --accent-3: var(--violet-3);

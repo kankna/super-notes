@@ -9,23 +9,12 @@
  *   11-12 强调文字
  *
  * 所有颜色只从这里取，组件里不写死色值。
+ * 浅色是 :root，深色由 [data-mode='dark'] 覆盖。
  */
 
 :root {
-  /* ===== 中性色 ===== */
-  --app: var(--slate-1);
-  --app-subtle: var(--slate-2);
-  --element: var(--slate-3);
-  --element-hover: var(--slate-4);
-  --element-active: var(--slate-5);
-  --border-subtle: var(--slate-5);
-  --border: var(--slate-6);
-  --border-strong: var(--slate-7);
-  --solid: var(--slate-8);
-  --solid-hover: var(--slate-9);
-  --text-faint: var(--slate-9);
-  --text-muted: var(--slate-11);
-  --text: var(--slate-12);
+  /* ===== 模式（浅色 / 深色） ===== */
+  color-scheme: light;
 
   /* ===== 主题色（默认靛蓝，可在设置里切换） ===== */
   --accent-1: var(--indigo-1);
@@ -53,15 +42,29 @@
   --accent-a11: var(--indigo-a11);
   --accent-a12: var(--indigo-a12);
 
+  /* ===== 中性色（浅色模式） ===== */
+  --app: var(--slate-1);
+  --app-subtle: var(--slate-2);
+  --element: var(--slate-3);
+  --element-hover: var(--slate-4);
+  --element-active: var(--slate-5);
+  --border-subtle: var(--slate-5);
+  --border: var(--slate-6);
+  --border-strong: var(--slate-7);
+  --solid: var(--slate-8);
+  --solid-hover: var(--slate-9);
+  --text-faint: var(--slate-8);
+  --text-muted: var(--slate-10);
+  --text: var(--slate-12);
+
+  /* ===== 语义色 ===== */
   --accent: var(--accent-9);
   --accent-hover: var(--accent-10);
   --accent-text: var(--accent-11);
   --accent-bg: var(--accent-a3);
   --accent-border: var(--accent-a6);
-  /* 实心强调色上的文字：按主题分别给，见 themes.css */
   --on-accent: #ffffff;
 
-  /* ===== 语义色 ===== */
   --success: var(--green-9);
   --success-text: var(--green-11);
   --success-bg: var(--green-a3);
@@ -76,6 +79,12 @@
   --danger-text: var(--tomato-11);
   --danger-bg: var(--tomato-a3);
   --danger-border: var(--tomato-a6);
+
+  /* ===== 阴影：深浅模式强度不同 ===== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 20px -12px rgba(0, 0, 0, 0.35);
+  --shadow-book: 0 12px 20px -16px rgba(0, 0, 0, 0.45);
+  --scrim: rgba(0, 0, 0, 0.45);
 
   /* ===== 字号：只用三档，其余靠字重、颜色、间距拉开层次 ===== */
   --fs-xs: 12px;
@@ -107,4 +116,19 @@
   --sp-6: 32px;
 
   --hairline: 0.5px;
+}
+
+/* ===== 深色模式 ===== */
+
+[data-mode='dark'] {
+  color-scheme: dark;
+
+  /* 深色下文字要更亮、层级更靠前 */
+  --text-faint: var(--slate-9);
+  --text-muted: var(--slate-11);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 20px -12px rgba(0, 0, 0, 0.8);
+  --shadow-book: 0 12px 20px -16px rgba(0, 0, 0, 0.9);
+  --scrim: rgba(0, 0, 0, 0.6);
 }

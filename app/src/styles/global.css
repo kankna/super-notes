@@ -610,7 +610,7 @@ code {
   display: flex;
   height: 248px;
   border-radius: var(--r-sm) var(--r-md) var(--r-md) var(--r-sm);
-  box-shadow: 0 12px 20px -16px rgba(0, 0, 0, 0.9);
+  box-shadow: var(--shadow-book);
 }
 
 .book__spine {
@@ -762,7 +762,7 @@ code {
   transition: background var(--dur) var(--ease);
 }
 .book__act:hover {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--scrim);
 }
 
 .shelf__grid:has(.book:hover) .book:not(:hover) {
@@ -894,7 +894,7 @@ code {
   border-radius: var(--r-md);
   background: var(--app-subtle);
   border: var(--hairline) solid var(--border);
-  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--shadow-md);
   font-size: var(--fs-xs);
 }
 .toast__undo {
@@ -910,7 +910,7 @@ code {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
