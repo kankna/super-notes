@@ -74,10 +74,12 @@ describe('完整学习流程（真实点击）', () => {
     const steps = screen.getAllByRole('button', { name: /^第 [1-7] 步/ })
     expect(steps.length).toBe(7)
 
-    // 4. 计时：开始
-    const startBtn = screen.getByRole('button', { name: '开始' })
-    await user.click(startBtn)
-    await waitFor(() => expect(screen.getByRole('button', { name: '暂停' })).toBeInTheDocument())
+    // 4. 计时：进入这一步就自动开始记录，不需要手动点
+    await waitFor(async () => {
+      const sessions = await db.sessions.toArray()
+      const events = await listStepEvents(sessions[0].id)
+      expect(events.some((e) => e.type === 'start')).toBe(true)
+    })
 
     // 事件真的落库了
     const sessions = await db.sessions.toArray()
@@ -120,15 +122,25 @@ describe('完整学习流程（真实点击）', () => {
       timeout: 5000,
     })
 
-    // 7. 去实践：番茄钟 + 任务清单
+    // 7. 去实践：错题收录入口 + 作业清单（没有番茄钟了）
     await user.click(screen.getByRole('button', { name: '第 4 步 去实践' }))
-    expect(await screen.findByText('开始专注 25 分钟')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '拍错题' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '拍好题' })).toBeInTheDocument()
+    expect(screen.queryByText('开始专注 25 分钟')).not.toBeInTheDocument()
     expect(screen.getByText(/教材 P68 习题 1/)).toBeInTheDocument()
 
-    // 8. 说感悟：写心得并保存
+    // 8. 说感悟：先自己写；不知道写什么时点按钮弹出提示
     await user.click(screen.getByRole('button', { name: '第 5 步 说感悟' }))
-    const box = await screen.findByPlaceholderText(/写完题目再写收获/)
+    const box = await screen.findByPlaceholderText(/想到什么写什么/)
     await user.type(box, '这次终于把导数符号和单调性连起来了。')
+    await user.click(screen.getByRole('button', { name: '不知道怎么写？' }))
+    const hintBox = await screen.findByPlaceholderText(/在这里写/)
+    await user.type(hintBox, '以前我总以为背下来就会了。')
+    await user.click(screen.getByRole('button', { name: '放进去' }))
+    await waitFor(() => {
+      const v = (screen.getByPlaceholderText(/想到什么写什么/) as HTMLTextAreaElement).value
+      expect(v).toContain('以前我总以为')
+    })
     await user.click(screen.getByRole('button', { name: '保存心得' }))
     await waitFor(async () => {
       expect((await db.reflections.toArray()).length).toBe(1)
@@ -151,8 +163,6 @@ describe('完整学习流程（真实点击）', () => {
     })
 
     // 11. 完成这一步后，流程状态如实记录
-    await user.click(screen.getByRole('button', { name: '开始' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: '完成这步' })).toBeEnabled())
     await user.click(screen.getByRole('button', { name: '完成这步' }))
     await waitFor(async () => {
       const s = (await db.sessions.toArray())[0]
@@ -172,8 +182,6 @@ describe('完整学习流程（真实点击）', () => {
     await user.click(await screen.findByRole('button', { name: /数学课后学习/ }))
     await waitFor(() => expect(screen.getByText(/共 7 步/)).toBeInTheDocument())
 
-    await user.click(screen.getByRole('button', { name: '开始' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: '暂停' })).toBeInTheDocument())
     await user.click(screen.getByRole('button', { name: '完成这步' }))
     await waitFor(async () => {
       const s = (await db.sessions.toArray())[0]

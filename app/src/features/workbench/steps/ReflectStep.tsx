@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { getDb } from '../../../db/db'
 import { newId } from '../../../lib/id'
 import { Markdown } from '../../../components/Markdown'
+import { Icon } from '../../../components/Icon'
 import { useUI } from '../../../store/ui'
 import type { WbCtx } from '../WorkbenchPage'
 
@@ -23,6 +24,8 @@ export function ReflectStep({ ctx }: { ctx: WbCtx }) {
 
   const [body, setBody] = useState('')
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [hintOpen, setHintOpen] = useState(false)
+  const [draft, setDraft] = useState('')
 
   const save = async () => {
     if (!body.trim() && !Object.values(answers).some((a) => a.trim())) {
@@ -47,41 +50,33 @@ export function ReflectStep({ ctx }: { ctx: WbCtx }) {
     showToast('已保存')
   }
 
+  /** 把提示面板里写的内容追加到正文 */
+  const appendDraft = () => {
+    if (!draft.trim()) return
+    setBody((b) => (b.trim() ? `${b.trim()}\n\n${draft.trim()}` : draft.trim()))
+    setDraft('')
+    setHintOpen(false)
+  }
+
   return (
     <div className="step">
-
-      {guidance.length > 0 && (
-        <section className="card">
-          <div className="card__head">
-            <h3>引导问题</h3>
-          </div>
-          {guidance.map((g, i) => (
-            <div className="guide" key={i}>
-              <div className="guide__q">{g}</div>
-              <textarea
-                className="textarea"
-                placeholder="随便写，写多少算多少"
-                value={answers[g] ?? ''}
-                onChange={(e) => setAnswers((a) => ({ ...a, [g]: e.target.value }))}
-              />
-            </div>
-          ))}
-        </section>
-      )}
-
       <section className="card">
         <div className="card__head">
-          <h3>自由发挥</h3>
+          <h3>这次学到了什么</h3>
+          {guidance.length > 0 && (
+            <button className="btn btn--sm card__acts" onClick={() => setHintOpen(true)}>
+              不知道怎么写？
+            </button>
+          )}
         </div>
         <textarea
-          className="textarea"
-          style={{ minHeight: 160 }}
-          placeholder="写完题目再写收获。公式可以用 LaTeX：$x^2$"
+          className="textarea reflect__box"
+          placeholder="想到什么写什么。公式可以用 LaTeX：$x^2$"
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
         <div className="row-btns">
-          <button className="btn btn--primary btn--sm" onClick={save}>
+          <button className="btn btn--primary" onClick={save}>
             保存心得
           </button>
         </div>
@@ -105,6 +100,49 @@ export function ReflectStep({ ctx }: { ctx: WbCtx }) {
             </article>
           ))}
         </section>
+      )}
+
+      {hintOpen && (
+        <div className="modal-backdrop" onClick={() => setHintOpen(false)}>
+          <div className="modal modal--narrow" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__head">
+              <h3 className="modal__title">换个角度想想</h3>
+              <button className="iconbtn" onClick={() => setHintOpen(false)} aria-label="关闭">
+                <Icon name="close" size={16} />
+              </button>
+            </div>
+
+            <div className="modal__body">
+              <div className="msg">
+                <div className="msg__who">学习助手</div>
+                <div className="msg__bubble">
+                  挑一个顺眼的回答就行，也可以一个都不答。
+                  <ul className="msg__list">
+                    {guidance.map((g, i) => (
+                      <li key={i}>{g}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <textarea
+                className="textarea msg__input"
+                placeholder="在这里写，写完放回上面"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+              />
+            </div>
+
+            <div className="modal__foot">
+              <button className="btn btn--ghost" onClick={() => setHintOpen(false)}>
+                关闭
+              </button>
+              <button className="btn btn--primary" onClick={appendDraft}>
+                放进去
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

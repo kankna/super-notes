@@ -27,7 +27,7 @@ export const BLOCK_WHAT: Record<BlockType, string> = {
 export const BLOCK_DESC: Record<BlockType, string> = {
   organize: '拍照上传课堂照片 → AI 转写整理 → 对照原图校对',
   recall: '遮住答案，在纸上默写或重演，逐条标记掌握情况',
-  explain: '把疑点清单逐条解决：AI 分层提示 + 自己的话讲清楚',
+  explain: '把不会清单逐条解决：AI 分层提示 + 自己的话讲清楚',
   practice: '浏览作业、分类难度、番茄钟推进、拍照收录错题好题',
   reflect: '自由写心得，或按引导问题回答',
   preview: '浏览下一课材料，标出重点、难点和待问的问题',
@@ -84,12 +84,12 @@ export function makeMathTemplate(): Template {
       makeBlock('recall', {
         name: '先复习',
         instruction:
-          '定理与公式：不翻书默写到白纸。例题：自己一步一步推出来并讲一遍。卡壳但对答案后懂了，回笔记上标记「不熟悉」；完全不懂的写进疑点清单。',
+          '定理与公式：不翻书默写到白纸。例题：自己一步一步推出来并讲一遍。推不动的标「有点糊」，完全不懂的标「不会」。',
         timing: 'manual',
       }),
       makeBlock('explain', {
         name: '弄懂它',
-        instruction: '把疑点清单逐条解决：先要一层提示，自己讲一遍，再做一道检测题。',
+        instruction: '把不会清单逐条解决：先要一层提示，自己讲一遍，再做一道检测题。',
         timing: 'manual',
       }),
       makeBlock('practice', {

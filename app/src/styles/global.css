@@ -329,6 +329,7 @@ code {
   padding: 0 var(--sp-3);
   border-radius: var(--r-sm);
   font-size: var(--fs-md);
+  white-space: nowrap;
   border: var(--hairline) solid var(--border);
   background: var(--element);
   color: var(--text-muted);
@@ -1331,6 +1332,68 @@ code {
   display: flex;
   gap: var(--sp-2);
   margin-top: var(--sp-3);
+}
+.task__add .input {
+  flex: 1;
+  min-width: 0;
+}
+.task__add .btn {
+  flex: none;
+}
+
+/* 卡片右上角的操作区 */
+.card__acts {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+/* 写心得 */
+.reflect__box {
+  min-height: 240px;
+  max-width: 760px;
+  font-size: var(--fs-md);
+  line-height: 1.9;
+}
+
+/* 消息式提示 */
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--sp-4);
+}
+.msg__who {
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  padding-left: 2px;
+}
+.msg__bubble {
+  background: var(--element);
+  border: var(--hairline) solid var(--border-subtle);
+  border-radius: var(--r-md);
+  border-top-left-radius: var(--r-xs);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-md);
+  line-height: 1.8;
+  color: var(--text);
+}
+.msg__list {
+  margin: var(--sp-2) 0 0;
+  padding-left: var(--sp-5);
+  color: var(--text-muted);
+}
+.msg__list li {
+  margin-bottom: 4px;
+}
+.msg__input {
+  min-height: 130px;
+}
+
+.modal--narrow {
+  width: min(460px, 100%);
 }
 
 .photo-grid {

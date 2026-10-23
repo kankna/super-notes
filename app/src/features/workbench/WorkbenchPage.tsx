@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { getDb } from '../../db/db'
@@ -12,7 +12,7 @@ import {
   updateSession,
 } from '../../db/repo/session'
 import { createDoubt, toggleMark } from '../../db/repo/items'
-import { formatDuration } from '../../lib/time'
+import { formatDurationCn } from '../../lib/time'
 import { StepBody } from './steps/StepBody'
 import { NotesDrawer } from './NotesDrawer'
 import type {
@@ -88,7 +88,10 @@ export function WorkbenchPage() {
   const [, force] = useState(0)
   const refresh = useCallback(() => force((n) => n + 1), [])
 
-  // 步骤事件与尝试结果显式加载：计时是核心链路，不能依赖实时查询的触发时机
+  /** 正在计时的步骤。用 ref 同步维护，避免异步刷新造成的重复计时。 */
+  const runningRef = useRef<string | null>(null)
+  const bootedRef = useRef(false)
+
   const loadEvents = useCallback(async () => {
     if (!sessionId) {
       setEvents([])
@@ -104,7 +107,7 @@ export function WorkbenchPage() {
     }
     const rows = await db.attempts.where('session_id').equals(sessionId).toArray()
     setAttempts(rows.sort((a, b) => a.created_at - b.created_at))
-  }, [sessionId])
+  }, [sessionId, db])
 
   useEffect(() => {
     void loadEvents()
@@ -138,7 +141,7 @@ export function WorkbenchPage() {
 
   const timing = useMemo(
     () => computeTiming(events ?? [], Date.now()),
-    // tick 参与依赖：正在计时时每秒重算，秒数才会走
+    // tick 参与依赖：正在计时时每秒重算
     [events, refresh, tick],
   )
 
@@ -156,21 +159,15 @@ export function WorkbenchPage() {
   const steps = session?.template_snapshot ?? []
   const stepIndex = Math.min(session?.current_step ?? 0, Math.max(0, steps.length - 1))
   const step = steps[stepIndex]
-  const stepTimingInfo = step ? stepTiming(timing, step.id) : null
-  const elapsed = stepTimingInfo?.activeMs ?? 0
-  const running = stepTimingInfo?.running ?? false
-  const started = (stepTimingInfo?.lastTs ?? null) !== null
 
-  /* ---------------- 动作 ---------------- */
+  /* ---------------- 后台计时 ---------------- */
 
-  const writeEvent = useCallback(
-    async (type: Parameters<typeof addStepEvent>[2], opts?: { manual?: boolean; note?: string }) => {
-      if (!session || !step) return
+  const writeEventFor = useCallback(
+    async (stepId: string, type: Parameters<typeof addStepEvent>[2]) => {
+      if (!session) return
       try {
-        await withTimeout(addStepEvent(session.id, step.id, type, opts), 8000, '写入超时')
-        await withTimeout(updateSession(session.id, { status: 'in_progress' }), 8000, '更新超时')
+        await withTimeout(addStepEvent(session.id, stepId, type), 8000, '写入超时')
         await loadEvents()
-        refresh()
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('记录步骤事件失败', err)
@@ -178,20 +175,62 @@ export function WorkbenchPage() {
         await loadEvents()
       }
     },
-    [session, step, refresh, showToast, loadEvents],
+    [session, showToast, loadEvents],
   )
 
-  const onToggleTimer = useCallback(async () => {
-    if (running) {
-      await writeEvent('pause')
-      return
-    }
-    await writeEvent(started ? 'resume' : 'start')
-  }, [running, started, writeEvent])
+  /** 开始给某一步计时（已经在跑就不重复） */
+  const startTimer = useCallback(
+    async (stepId: string) => {
+      if (!session || runningRef.current === stepId) return
+      if (runningRef.current) {
+        const prev = runningRef.current
+        runningRef.current = null
+        await writeEventFor(prev, 'pause')
+      }
+      const had = events.some((e) => e.step_id === stepId)
+      runningRef.current = stepId
+      await writeEventFor(stepId, had ? 'resume' : 'start')
+    },
+    [session, events, writeEventFor],
+  )
+
+  /** 停止给某一步计时 */
+  const stopTimer = useCallback(
+    async (stepId: string) => {
+      if (runningRef.current !== stepId) return
+      runningRef.current = null
+      await writeEventFor(stepId, 'pause')
+    },
+    [writeEventFor],
+  )
+
+  // 打开工作台就开始记这一步的时长
+  useEffect(() => {
+    if (!session || !step || bootedRef.current) return
+    bootedRef.current = true
+    const t = stepTiming(timing, step.id)
+    runningRef.current = t.running ? step.id : null
+    if (!t.running) void startTimer(step.id)
+  }, [session?.id, step?.id])
+
+  const goStep = useCallback(
+    async (i: number) => {
+      if (!session) return
+      const next = steps[i]
+      if (!next) return
+      if (step && step.id !== next.id) await stopTimer(step.id)
+      await updateSession(session.id, { current_step: i })
+      await startTimer(next.id)
+      await loadEvents()
+      refresh()
+    },
+    [session, steps, step, stopTimer, startTimer, loadEvents, refresh],
+  )
 
   const onComplete = useCallback(async () => {
     if (!session || !step) return
-    await writeEvent('complete')
+    runningRef.current = null
+    await writeEventFor(step.id, 'complete')
     const next = stepIndex + 1
     await updateSession(session.id, {
       current_step: Math.min(next, steps.length - 1),
@@ -201,21 +240,35 @@ export function WorkbenchPage() {
     await loadEvents()
     refresh()
     if (next >= steps.length) {
-      showToast('这一轮全部完成 🎉')
+      showToast('这一轮全部完成')
     } else {
-      showToast(`完成「${step.name}」，下一步：${steps[next].name}`)
+      await startTimer(steps[next].id)
+      await loadEvents()
+      refresh()
+      showToast(`下一步：${steps[next].name}`)
     }
-  }, [session, step, writeEvent, stepIndex, steps, refresh, showToast, loadEvents])
+  }, [session, step, writeEventFor, stepIndex, steps, refresh, showToast, loadEvents, startTimer])
 
   const onSkip = useCallback(async () => {
-    await writeEvent('skip')
-    showToast('这一步先跳过，不算完成')
-  }, [writeEvent, showToast])
+    if (!session || !step) return
+    runningRef.current = null
+    await writeEventFor(step.id, 'skip')
+    const next = stepIndex + 1
+    await updateSession(session.id, { current_step: Math.min(next, steps.length - 1) })
+    if (next < steps.length) await startTimer(steps[next].id)
+    await loadEvents()
+    refresh()
+    showToast('先跳过，不算完成')
+  }, [session, step, writeEventFor, stepIndex, steps, startTimer, loadEvents, refresh, showToast])
 
   const onDefer = useCallback(async () => {
-    await writeEvent('defer')
-    showToast('这一步改天再说，不算完成')
-  }, [writeEvent, showToast])
+    if (!session || !step) return
+    runningRef.current = null
+    await writeEventFor(step.id, 'defer')
+    await loadEvents()
+    refresh()
+    showToast('改天再说，不算完成')
+  }, [session, step, writeEventFor, loadEvents, refresh, showToast])
 
   const onConfirmGap = useCallback(
     async (include: boolean) => {
@@ -253,7 +306,7 @@ export function WorkbenchPage() {
             title: it.title,
             context: it.body_md.slice(0, 200),
           })
-          showToast('已放进「不会清单」')
+          showToast('已放进不会清单')
         }
       }
     },
@@ -270,7 +323,7 @@ export function WorkbenchPage() {
         context: item.body_md.slice(0, 300),
       })
       refresh()
-      showToast('已放进「不会清单」')
+      showToast('已放进不会清单')
     },
     [projectId, unitId, refresh, showToast],
   )
@@ -302,15 +355,6 @@ export function WorkbenchPage() {
     [session, step, refresh, loadAttempts],
   )
 
-  const goStep = useCallback(
-    (i: number) => {
-      if (!session) return
-      updateSession(session.id, { current_step: i })
-      refresh()
-    },
-    [session, refresh],
-  )
-
   if (!unit) return <div className="stage" />
 
   if (!session) {
@@ -338,7 +382,7 @@ export function WorkbenchPage() {
     doubts: doubts ?? [],
     tasks: tasks ?? [],
     attempts: (attempts ?? []).filter((a) => a.session_id === session.id),
-    goStep,
+    goStep: (i) => void goStep(i),
     onToggleMark: handleToggleMark,
     onAddDoubt: handleAddDoubt,
     onAttempt: handleAttempt,
@@ -389,7 +433,7 @@ export function WorkbenchPage() {
                 <button
                   key={b.id}
                   className={`wb2__dot ${cls}${i === stepIndex ? ' is-now' : ''}`}
-                  onClick={() => goStep(i)}
+                  onClick={() => void goStep(i)}
                   title={b.name}
                   aria-label={`第 ${i + 1} 步 ${b.name}`}
                 >
@@ -414,7 +458,7 @@ export function WorkbenchPage() {
         <footer className="wb2__foot">
           {uncertain && (
             <div className="wb2__gap">
-              <span>刚才有 {formatDuration(uncertain.ms)} 没有动静，算进学习时长吗？</span>
+              <span>刚才有 {formatDurationCn(uncertain.ms)} 没有动静，算进学习时长吗？</span>
               <button className="linkbtn" onClick={() => onConfirmGap(true)}>
                 算
               </button>
@@ -424,26 +468,17 @@ export function WorkbenchPage() {
             </div>
           )}
           <div className="wb2__bar">
-            <div className="wb2__clock">
-              <span className="wb2__clocklabel">这一步用时</span>
-              <span className={`wb2__clockvalue${running ? ' is-on' : ''}`}>
-                {formatDuration(elapsed)}
-              </span>
-            </div>
-            <button className="btn wb2__toggle" onClick={onToggleTimer}>
-              {running ? '暂停' : started ? '继续' : '开始'}
-            </button>
             <button className="btn btn--primary wb2__done" onClick={onComplete}>
               完成这步
             </button>
-          </div>
-          <div className="wb2__minor">
-            <button className="linkbtn" onClick={onSkip}>
-              先跳过
-            </button>
-            <button className="linkbtn" onClick={onDefer}>
-              改天再说
-            </button>
+            <div className="wb2__minor">
+              <button className="linkbtn" onClick={onSkip}>
+                先跳过
+              </button>
+              <button className="linkbtn" onClick={onDefer}>
+                改天再说
+              </button>
+            </div>
           </div>
         </footer>
 
@@ -531,7 +566,7 @@ function StartSession({
         </div>
 
         <div className="start__foot">
-          没有合适的？去 <a href="#/templates">模板</a> 复制一个改，或者自己新建一个空白流程。
+          没有合适的？去 <a href="#/templates">模板</a> 改一个。
         </div>
       </div>
     </main>

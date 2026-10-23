@@ -3,7 +3,6 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { getDb } from '../../../db/db'
 import { newId } from '../../../lib/id'
 import { Icon } from '../../../components/Icon'
-import { Pomodoro } from '../Pomodoro'
 import { updateTask } from '../../../db/repo/session'
 import { useUI } from '../../../store/ui'
 import { formatDuration } from '../../../lib/time'
@@ -25,7 +24,12 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
   const runningSinceRef = useRef<number | null>(null)
 
   const photos = useLiveQuery(
-    () => db.attachments.where('unit_id').equals(ctx.unitId).filter((a) => a.role !== 'source_photo').toArray(),
+    () =>
+      db.attachments
+        .where('unit_id')
+        .equals(ctx.unitId)
+        .filter((a) => a.role !== 'source_photo')
+        .toArray(),
     [ctx.unitId],
   )
 
@@ -82,7 +86,12 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
     ctx.refresh()
   }
 
-  const uploadPhoto = async (taskId: string, role: 'wrong' | 'good', files: FileList | null) => {
+  /** 收录错题/好题。taskId 为空表示不挂在某道题下，只做照片收藏。 */
+  const uploadPhoto = async (
+    taskId: string | null,
+    role: 'wrong' | 'good',
+    files: FileList | null,
+  ) => {
     if (!files?.length) return
     for (const f of Array.from(files)) {
       await db.attachments.add({
@@ -98,7 +107,7 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
         created_at: Date.now(),
       })
     }
-    if (role === 'wrong') await updateTask(taskId, { wrong: true })
+    if (role === 'wrong' && taskId) await updateTask(taskId, { wrong: true })
     ctx.refresh()
     showToast(`已收录${role === 'wrong' ? '错题' : '好题'}照片`)
   }
@@ -108,17 +117,61 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
 
   return (
     <div className="step">
-
       <section className="card">
         <div className="card__head">
-          <h3>番茄钟</h3>
+          <h3>错题与好题</h3>
+          <div className="card__acts">
+            <label className="btn btn--sm" role="button" tabIndex={0}>
+              拍错题
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  uploadPhoto(null, 'wrong', e.target.files)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+            <label className="btn btn--sm" role="button" tabIndex={0}>
+              拍好题
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  uploadPhoto(null, 'good', e.target.files)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+          </div>
         </div>
-        <Pomodoro
-          sessionId={ctx.session.id}
-          stepId={ctx.step.id}
-          workMinutes={ctx.step.settings.pomodoro?.work ?? 25}
-          breakMinutes={ctx.step.settings.pomodoro?.break ?? 5}
-        />
+
+        {(photos ?? []).length === 0 ? (
+          <div className="card__empty">做一道题觉得值得留下来，就拍一张。</div>
+        ) : (
+          <div className="photo-grid">
+            {(photos ?? []).map((p) => (
+              <div className="photo" key={p.id}>
+                <img src={URL.createObjectURL(p.blob)} alt={p.name} />
+                <div className="photo__bar">
+                  <span>{p.role === 'wrong' ? '错题' : '好题'}</span>
+                  <button
+                    className="iconbtn"
+                    title="删除"
+                    onClick={async () => {
+                      await db.attachments.delete(p.id)
+                      ctx.refresh()
+                    }}
+                  >
+                    <Icon name="trash" size={13} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {overList.length > 0 && (
@@ -136,15 +189,13 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
 
         <div className="tasklist">
           {ctx.tasks.map((t) => {
-            const el = elapsedOf(t)
             const running = runningTaskRef.current === t.id
-            const shotWrong = (photos ?? []).filter((p) => p.role === 'wrong')
             return (
               <div className={`task${running ? ' is-running' : ''}`} key={t.id}>
                 <div className="task__main">
                   <div className="task__title">{t.title}</div>
                   <div className="task__meta">
-                    <span className="task__time">{formatDuration(el)}</span>
+                    <span className="task__time">{formatDuration(elapsedOf(t))}</span>
                     <div className="task__diffs">
                       {DIFFS.map((d) => (
                         <button
@@ -172,30 +223,6 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
                       开始
                     </button>
                   )}
-                  <label className="btn btn--sm" title="拍照收录错题">
-                    拍错题
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={(e) => {
-                        uploadPhoto(t.id, 'wrong', e.target.files)
-                        e.target.value = ''
-                      }}
-                    />
-                  </label>
-                  <label className="btn btn--sm" title="拍照收录好题">
-                    拍好题
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={(e) => {
-                        uploadPhoto(t.id, 'good', e.target.files)
-                        e.target.value = ''
-                      }}
-                    />
-                  </label>
                   <button
                     className="iconbtn"
                     title="删除"
@@ -207,13 +234,6 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
                     <Icon name="close" size={14} />
                   </button>
                 </div>
-                {shotWrong.length > 0 && (
-                  <div className="task__shots">
-                    {shotWrong.slice(-4).map((p) => (
-                      <img key={p.id} src={URL.createObjectURL(p.blob)} alt={p.name} />
-                    ))}
-                  </div>
-                )}
               </div>
             )
           })}
@@ -227,38 +247,11 @@ export function PracticeStep({ ctx }: { ctx: WbCtx }) {
             onChange={(e) => setAdding(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addTask()}
           />
-          <button className="btn btn--primary btn--sm" onClick={addTask}>
+          <button className="btn btn--primary" onClick={addTask}>
             添加
           </button>
         </div>
       </section>
-
-      {(photos ?? []).length > 0 && (
-        <section className="card">
-          <div className="card__head">
-            <h3>错题与好题（{(photos ?? []).length}）</h3>
-          </div>
-          <div className="photo-grid">
-            {(photos ?? []).map((p) => (
-              <div className="photo" key={p.id}>
-                <img src={URL.createObjectURL(p.blob)} alt={p.name} />
-                <div className="photo__bar">
-                  <span>{p.role === 'wrong' ? '错题' : '好题'}</span>
-                  <button
-                    className="iconbtn"
-                    onClick={async () => {
-                      await db.attachments.delete(p.id)
-                      ctx.refresh()
-                    }}
-                  >
-                    <Icon name="trash" size={13} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   )
 }

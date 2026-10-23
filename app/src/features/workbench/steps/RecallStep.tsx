@@ -17,7 +17,8 @@ export function RecallStep({ ctx }: { ctx: WbCtx }) {
       if (it.kind === 'example') {
         const answer = ctx.items.find((a) => a.kind === 'answer' && a.order > it.order)
         examples.push({ q: it, a: answer ?? null })
-      } else if (it.kind !== 'answer') {
+      } else if (it.kind !== 'answer' && it.kind !== 'theorem' && it.kind !== 'formula') {
+        // 其余条目（笔记、总结、题目）单独一栏，不和上面重复
         others.push(it)
       }
     }
@@ -41,7 +42,6 @@ export function RecallStep({ ctx }: { ctx: WbCtx }) {
   return (
     <div className="step">
       <div className="step__intro">
-        <p className="step__detail">{ctx.step.instruction}</p>
         <div className="row-btns">
           {hideAnswer && (
             <button className="btn btn--sm" onClick={revealAll}>
@@ -50,7 +50,7 @@ export function RecallStep({ ctx }: { ctx: WbCtx }) {
             </button>
           )}
           <span className="card__hint">
-            默写和重演都在纸上做，这里只记录结果。标记「不熟悉」会回到笔记标记，「有疑问」自动进疑点清单。
+            默写和重演都在纸上做，这里只记结果。推不动的标「有点糊」，完全不懂的标「不会」。
           </span>
         </div>
       </div>

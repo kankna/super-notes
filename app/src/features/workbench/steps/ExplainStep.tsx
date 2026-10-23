@@ -247,7 +247,7 @@ export function ExplainStep({ ctx }: { ctx: WbCtx }) {
 
       {ctx.doubts.length === 0 && (
         <div className="card__empty">
-          疑点清单是空的。在「先复习」那一步把不理解的条目标成「有疑问」，它会自动进这里。
+          还没有不会的题。在「先复习」那一步把不懂的标成「不会」，它会自动进这里。
         </div>
       )}
 

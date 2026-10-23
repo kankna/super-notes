@@ -186,18 +186,17 @@ async function main() {
   console.log('  ✓ 开始了，步骤数 =', await evaluate(`document.querySelectorAll('.wb2__dot').length`))
   console.log('    页面告诉你：', await evaluate(`document.querySelector('.wb2__stepwhat')?.textContent.trim()`))
 
-  // 3. 计时
-  await clickText('开始', '开始计时')
-  await waitFor(
-    `document.querySelector('.wb2__clockvalue')?.textContent.trim() !== '00:00'`,
-    '计时器走秒',
-    8000,
+  // 3. 计时：进入这一步就自动开始记录
+  await waitFor(`document.querySelectorAll('.wb2__dot.is-doing').length > 0`, '自动计时', 8000)
+  console.log(
+    '  ✓ 自动计时已开始，计时中的步骤 =',
+    await evaluate(`document.querySelectorAll('.wb2__dot.is-doing').length`),
   )
-  console.log('  ✓ 计时运行中，当前 =', await evaluate(`document.querySelector('.wb2__clockvalue').textContent.trim()`))
   await shot('02-工作台-接收资料')
 
   // 4. 先复习：标记「有点糊」「不会」
   await gotoStep(2)
+  await shot('02b-工作台-先复习')
   const marked = await evaluate(`(() => {
     const btns = [...document.querySelectorAll('.mchip')];
     const un = btns.find(b => b.textContent.includes('有点糊'));
@@ -223,19 +222,36 @@ async function main() {
   await waitFor(`document.body.textContent.includes('第一层提示')`, 'AI 分层提示', 15000)
   console.log('  ✓ AI 分层提示已生成')
 
-  // 6. 去实践：番茄钟 + 任务
+  // 6. 去实践：错题收录入口 + 作业清单
   await gotoStep(4)
-  const pomo = await evaluate(`document.body.textContent.includes('开始专注')`)
+  const wrongEntry = await evaluate(`document.body.textContent.includes('拍错题')`)
+  const goodEntry = await evaluate(`document.body.textContent.includes('拍好题')`)
   const tasks = await evaluate(`document.querySelectorAll('.task').length`)
-  console.log(`  ✓ 番茄钟=${pomo} 任务数=${tasks}`)
+  console.log(`  ✓ 错题入口=${wrongEntry} 好题入口=${goodEntry} 任务数=${tasks}`)
   await shot('03-工作台-去实践')
 
-  // 7. 说感悟
+  // 7. 说感悟：先自己写，不知道写什么时点按钮弹提示
   await gotoStep(5)
-  await typeInto('写完题目', '这次终于把导数符号和单调性连起来了。')
-  await clickText('保存心得', '保存心得')
-  await sleep(600)
-  console.log('  ✓ 心得已保存 =', await evaluate(`document.body.textContent.includes('这次终于把导数符号')`))
+  await typeInto('想到什么写什么', '这次终于把导数符号和单调性连起来了。')
+  await evaluate(
+    `[...document.querySelectorAll('button')].find(b => b.textContent.includes('不知道怎么写'))?.click()`,
+  )
+  await sleep(300)
+  const hintVisible = await evaluate(
+    `!!document.querySelector('.msg__bubble') && !!document.querySelector('.msg__input')`,
+  )
+  console.log('  ✓ 提示面板弹出 =', hintVisible)
+  await shot('03b-提示面板')
+  await typeInto('在这里写', '以前我总以为背下来就会了。')
+  await evaluate(
+    `[...document.querySelectorAll('button')].find(b => b.textContent.trim() === '放进去')?.click()`,
+  )
+  await sleep(300)
+  await shot('03b-说感悟')
+  await evaluate(
+    `[...document.querySelectorAll('button')].find(b => b.textContent.includes('保存心得'))?.click()`,
+  )
+  await sleep(500)
 
   // 8. 先探路
   await gotoStep(6)
@@ -251,9 +267,7 @@ async function main() {
   console.log('  ✓ 复测已安排 =', await evaluate(`document.querySelectorAll('.retest').length > 0`))
 
   // 10. 完成本步
-  await clickText('开始', '开始计时(2)')
-  await sleep(500)
-  await clickText('完成这步', '完成这步')
+    await clickText('完成这步', '完成这步')
   await sleep(700)
   console.log('  ✓ 完成后顶部提示 =', await evaluate(`document.querySelector('.wb2__stepno')?.textContent.trim()`))
 

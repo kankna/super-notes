@@ -132,7 +132,7 @@
   max-width: 620px;
 }
 
-/* 内容：与页头共用同一条左边线 */
+/* 内容：整块铺开，卡片自动分栏，右侧不留大片空白 */
 .wb2__body {
   flex: 1;
   min-height: 0;
@@ -140,7 +140,15 @@
   padding: var(--sp-4) var(--sp-5) var(--sp-5);
 }
 .wb2__body > .step {
-  max-width: 720px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--sp-4);
+  align-items: start;
+}
+/* 提示条和引言横跨整行 */
+.wb2__body > .step > .alert,
+.wb2__body > .step > .step__intro {
+  grid-column: 1 / -1;
 }
 
 .step__detail {
@@ -178,28 +186,7 @@
 .wb2__bar {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  max-width: 720px;
-}
-
-.wb2__clock {
-  display: flex;
-  flex-direction: column;
-  margin-right: auto;
-  min-width: 90px;
-}
-.wb2__clocklabel {
-  font-size: var(--fs-xs);
-  color: var(--text-faint);
-}
-.wb2__clockvalue {
-  font-family: var(--font-mono);
-  font-size: var(--fs-lg);
-  color: var(--text-muted);
-  letter-spacing: 1px;
-}
-.wb2__clockvalue.is-on {
-  color: var(--accent-text);
+  gap: var(--sp-3);
 }
 
 .wb2__toggle,
@@ -208,9 +195,6 @@
   border-radius: var(--r-sm);
   font-size: var(--fs-md);
 }
-.wb2__toggle {
-  padding: 0 var(--sp-4);
-}
 .wb2__done {
   padding: 0 var(--sp-5);
   font-weight: 500;
@@ -218,8 +202,7 @@
 
 .wb2__minor {
   display: flex;
-  gap: var(--sp-3);
-  max-width: 720px;
+  gap: var(--sp-4);
 }
 
 /* ===========================================================
