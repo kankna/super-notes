@@ -1265,6 +1265,13 @@ code {
   border-radius: var(--r-sm);
   padding: var(--sp-3);
   background: var(--app);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+.task__main {
+  flex: 1;
+  min-width: 0;
 }
 .task.is-running {
   border-color: var(--accent);
